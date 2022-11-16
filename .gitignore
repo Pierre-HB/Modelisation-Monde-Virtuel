@@ -2,3 +2,5 @@ main.make
 Makefile
 bin
 obj
+noise.png
+test.png

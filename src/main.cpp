@@ -40,6 +40,7 @@ int main( int argc, char **argv )
     // t.get_occlusion_color();
     std::cout << t.ambiant_occlusion(2, 2) << std::endl;;
     t.export_as_image("test.png");
+    noise->export_as_image("noise.png");
     SimpleApp simple_app = SimpleApp(1024, 640, t.get_positions(), t.get_normals(), t.get_indexes());
     // SimpleApp simple_app = SimpleApp(1024, 640, t.get_positions(), t.get_normals(),t.get_slope_color(), t.get_indexes());
     // SimpleApp simple_app = SimpleApp(1024, 640, t.get_positions(), t.get_normals(),t.get_occlusion_color(), t.get_indexes());

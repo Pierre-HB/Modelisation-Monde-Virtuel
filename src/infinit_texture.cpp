@@ -1,5 +1,40 @@
 #include "infinit_texture.h"
 #include <math.h>
+#include "image.h"
+#include "image_io.h"
+
+void InfinitTexture2D::export_as_image(const char *file, int imageWidth, int imageHeight, float x, float y, float width, float height) const{
+    float stepX = width/imageWidth;
+    float stepY = height/imageHeight;
+    Image image(imageWidth, imageHeight, Color(0));
+
+    float min_value = value(x, y);
+    float max_value = min_value;
+    float x_ = x;
+    float y_ = y;
+
+    for(int i = 0; i < imageWidth; i++){
+        for(int j = 0; j < imageHeight; j++){
+            float v = value(x_, y_);
+            image(i, j) = Color(v);
+            
+            if(v > max_value)
+                max_value = v;
+            if(v < min_value)
+                min_value = v;
+
+            y_ += stepY;
+        }
+
+        x_ += stepX;
+        y_ = y;
+    }
+    for(int i = 0; i < imageWidth; i++)
+        for(int j = 0; j < imageHeight; j++)
+            image(i, j) = Color((image(i, j).r-min_value)/(max_value-min_value));
+
+    write_image(image, file);
+}
 
 
 float InfinitTexture2DFromNoise::value(float x, float y) const{

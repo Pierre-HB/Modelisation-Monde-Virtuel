@@ -24,6 +24,8 @@ class InfinitTexture2D
 public:
     //! The value of the texture at point (x, y)
     virtual float value(float x, float y) const = 0;
+    //! Export the texture as a grayscale image
+    void export_as_image(const char *file, int imageWidth = 256, int imageHeight = 256, float x=0.0f, float y=0.0f, float width=1.0f, float height=1.0f) const;
 };
 
 //! An infinit texture created from a noise
