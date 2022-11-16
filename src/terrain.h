@@ -8,6 +8,13 @@
 #include "infinit_texture.h"
 #include "scalar_field.h"
 
+struct neighborhood{
+    int size;
+    int x[8];
+    int y[8];
+    double length[8];
+};
+
 class Terrain2D: public ScalarField2D
 {
 private:
@@ -15,8 +22,8 @@ private:
 public:
     Terrain2D(InfinitTexture2D *texture, vec2 min_p, vec2 max_p, int nx, int ny);
     ~Terrain2D(){};
-    //find a way to free the texture
 
+    neighborhood find_neighborhood(int i, int j) const;
     //! height at the node (i, j)
     float height(int i, int j) const;
     //! height at the point (x, y)
@@ -25,11 +32,11 @@ public:
     //! return the point at the node (i, j)
     Point point(int i, int j) const;
 
-    //! The 2D gradiant of the height at the node (i, j)
-    vec2 gradiant(int i, int j) const;
+    //! The 2D gradient of the height at the node (i, j)
+    vec2 gradient(int i, int j) const;
     //! normal at the node (i, j)
     Vector normal(int i, int j) const;
-    //! length of the gradiant at the node (i, j)
+    //! length of the gradient at the node (i, j)
     float slope(int i, int j) const;
     //! max slope of the terrain
     float max_slope() const;
@@ -49,8 +56,10 @@ public:
 
     //! return the scalarfield of the slope
     ScalarField2D get_slopes() const;
-    //! return the scalarfield od the occlusion
+    //! return the scalarfield of the occlusion
     ScalarField2D get_occlusions() const;
+    //! return the scalarfield of the drain
+    ScalarField2D get_drains() const;
 
     //! return the list of Points representing the mesh
     std::vector<vec3> get_positions() const;

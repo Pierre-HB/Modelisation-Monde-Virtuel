@@ -12,7 +12,7 @@ ScalarField2D::ScalarField2D(const ScalarField2D& cpy):nx(cpy.nx), ny(cpy.ny), v
 
 ScalarField2D::ScalarField2D(const std::vector<float>& values, int nx, int ny, Point min_p, Point max_p):nx(nx), ny(ny), values(values), min_p(min_p), max_p(max_p){}
 
-void ScalarField2D::export_as_image(const char *file) const{
+void ScalarField2D::export_as_image(const char *file, bool normalisation) const{
     Image image(nx, ny, Color(0));
     float max_value = values[0];
     float min_value = values[0];
@@ -25,7 +25,10 @@ void ScalarField2D::export_as_image(const char *file) const{
 
     for(int i = 0; i < nx; i++)
         for(int j = 0; j < ny; j++)
-            image(i, j) = Color((get_value(i, j)-min_value)/(max_value-min_value));
+            if(normalisation)
+                image(i, j) = Color((get_value(i, j)-min_value)/(max_value-min_value));
+            else
+                image(i, j) = Color(get_value(i, j));
     
     write_image(image, file);
 }

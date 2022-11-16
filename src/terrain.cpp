@@ -6,6 +6,7 @@
 #include "image.h"
 #include "image_io.h"
 
+
 Terrain2D::Terrain2D(InfinitTexture2D *texture, vec2 min_p, vec2 max_p, int nx, int ny){
     this->nx = nx;
     this->ny = ny;
@@ -26,6 +27,22 @@ Terrain2D::Terrain2D(InfinitTexture2D *texture, vec2 min_p, vec2 max_p, int nx, 
         }
     }
     slope_max = max_slope();
+}
+
+neighborhood Terrain2D::find_neighborhood(int i, int j) const{
+    neighborhood neighbors = neighborhood();
+    neighbors.size = 0;
+    for(int i_ = -1; i_ < 2; i_++){
+        for(int j_ = -1; j_ < 2; j_++){
+            if(i+i_ >= 0 && i+i_ < nx && j+j_ > 0 && j+j_ < ny && (i!=i_ || j!=j_)){
+                neighbors.x[neighbors.size] = i_;
+                neighbors.y[neighbors.size] = j_;
+                neighbors.length[neighbors.size] = sqrt(i_*i_ + j_*j_);
+                neighbors.size++;
+            }
+        }
+    }
+    return neighbors;
 }
 
 float Terrain2D::height(int i, int j) const{
@@ -64,38 +81,38 @@ Point Terrain2D::point(int i, int j) const{
     return Point(x, y, height(i, j));
 }
 
-vec2 Terrain2D::gradiant(int i, int j) const{
+vec2 Terrain2D::gradient(int i, int j) const{
     //gradient in x
-    float gradiant_x;
-    float gradiant_y;
+    float gradient_x;
+    float gradient_y;
     float ex = (max_p.x - min_p.x)/(nx-1);
     float ey = (max_p.y - min_p.y)/(ny-1);
 
     if(i == 0){
-        gradiant_x = (height(i+1, j) - height(i, j))/ex;
+        gradient_x = (height(i+1, j) - height(i, j))/ex;
     }else if(i == nx-1){
-        gradiant_x = (height(i, j) - height(i-1, j))/ex;
+        gradient_x = (height(i, j) - height(i-1, j))/ex;
     }else{
-        gradiant_x = (height(i+1, j) - height(i-1, j))/(2*ex);
+        gradient_x = (height(i+1, j) - height(i-1, j))/(2*ex);
     }
 
     if(j == 0){
-        gradiant_y = (height(i, j+1) - height(i, j))/ey;
+        gradient_y = (height(i, j+1) - height(i, j))/ey;
     }else if(j == ny-1){
-        gradiant_y = (height(i, j) - height(i, j-1))/ey;
+        gradient_y = (height(i, j) - height(i, j-1))/ey;
     }else{
-        gradiant_y = (height(i, j+1) - height(i, j-1))/(2*ey);
+        gradient_y = (height(i, j+1) - height(i, j-1))/(2*ey);
     }
-    return vec2(gradiant_x, gradiant_y);
+    return vec2(gradient_x, gradient_y);
 }
 
 Vector Terrain2D::normal(int i, int j) const{
-    vec2 grad = gradiant(i, j);
+    vec2 grad = gradient(i, j);
     return normalize(Vector(-grad.x, -grad.y, 1));
 }
 
 float Terrain2D::slope(int i, int j) const{
-    vec2 grad = gradiant(i, j);
+    vec2 grad = gradient(i, j);
     return sqrt(grad.x*grad.x + grad.y*grad.y);
 }
 
@@ -153,7 +170,7 @@ bool Terrain2D::ray_intersection(Point o, Vector d) const{
 
 float Terrain2D::ambiant_occlusion(int i, int j) const{
     float ambiant = 0;
-    int nb_ray = 8;
+    int nb_ray = 64;
     std::uniform_real_distribution<float> u01(0.0, 1.0);
     std::default_random_engine rng(42);
     for(int _ = 0; _ < nb_ray; _++){
@@ -231,4 +248,8 @@ ScalarField2D Terrain2D::get_occlusions() const{
         for(int i = 0; i < nx; i++)
             ambiants[get_index(i, j)] = ambiant_occlusion(i, j);
     return ScalarField2D(ambiants, nx, ny, min_p, max_p);
+}
+
+ScalarField2D Terrain2D::get_drains() const{
+
 }

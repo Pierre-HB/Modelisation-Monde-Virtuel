@@ -32,7 +32,7 @@ public:
     //! return the index in the values vector of the node (i, j)
     int get_index(int i, int j) const;
     //! export as a grayscale image
-    void export_as_image(const char *file) const;
+    void export_as_image(const char *file, bool normalisation = true) const;
     //! return the values vector
     std::vector<float> get_values() const; 
     //! return the value vector as color

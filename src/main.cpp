@@ -23,7 +23,8 @@ int main( int argc, char **argv )
     t.get_slopes().export_as_image("slope.png");
     t.laplacian().export_as_image("laplacian.png");
     t.export_as_image("height.png");
-    const char* texture_file = "slope.png";
+    // t.get_occlusions().export_as_image("occlusion.png", false);
+    const char* texture_file = "occlusion.png";
     SimpleApp simple_app = SimpleApp(1024, 640, t.get_positions(), t.get_normals(), t.get_texcoords(), texture_file, t.get_indexes());
     
     // SimpleApp simple_app = SimpleApp(1024, 640, t.get_positions(), t.get_normals(),t.get_slopes().get_values_as_color(), t.get_indexes());

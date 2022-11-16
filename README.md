@@ -10,3 +10,9 @@ There are several configuration for the makefile:
  * `make config=debug32` (not working)
  * `make config=release64` (comile using maximum acceleration)
  * `make config=release64` (not working)
+
+## Bug report
+ * The ambiant occlusion is wrong, dans les cratere, seulement un coté est asssombris...
+
+## TODO
+ * paraleliser les calcul de l'occlusion
