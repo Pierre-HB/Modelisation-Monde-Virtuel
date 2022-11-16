@@ -39,6 +39,7 @@ int main( int argc, char **argv )
     Terrain2D t = Terrain2D(noise, vec2(-5, -5), vec2(5, 5), 250, 250);
     // t.get_occlusion_color();
     std::cout << t.ambiant_occlusion(2, 2) << std::endl;;
+    t.export_as_image("test.png");
     SimpleApp simple_app = SimpleApp(1024, 640, t.get_positions(), t.get_normals(), t.get_indexes());
     // SimpleApp simple_app = SimpleApp(1024, 640, t.get_positions(), t.get_normals(),t.get_slope_color(), t.get_indexes());
     // SimpleApp simple_app = SimpleApp(1024, 640, t.get_positions(), t.get_normals(),t.get_occlusion_color(), t.get_indexes());
