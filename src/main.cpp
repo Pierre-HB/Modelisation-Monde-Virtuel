@@ -3,6 +3,7 @@
 #include "noise.h"
 #include "scalar_field.h"
 #include "infinit_texture.h"
+#include "terrain.h"
 
 int main( int argc, char **argv )
 {
