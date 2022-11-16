@@ -201,7 +201,7 @@ std::vector<Color> Terrain2D::get_slope_color() const{
 std::vector<Color> Terrain2D::get_occlusion_color() const{
     std::vector<Color> colors = std::vector<Color>();
     
-    #pragma omp parallel for
+    // #pragma omp parallel for
     for(int j = 0; j < ny; j++)
         for(int i = 0; i < nx; i++){
             //std::cout << "ambiant of (" << i << ", " << j << ")" << std::endl;
