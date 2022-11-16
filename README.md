@@ -16,3 +16,6 @@ There are several configuration for the makefile:
 
 ## TODO
  * paraleliser les calcul de l'occlusion
+ * calcul du drainage
+ * erosion thermique
+ * erosion techtonique (grosse formule du cours)
