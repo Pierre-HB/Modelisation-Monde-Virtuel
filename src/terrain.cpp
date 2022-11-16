@@ -187,6 +187,14 @@ std::vector<vec3> Terrain2D::get_normals() const{
             normals.push_back(normal(i, j));
     return normals;
 }
+
+std::vector<vec2> Terrain2D::get_texcoords() const{
+    std::vector<vec2> texcoords = std::vector<vec2>();
+    for(int j = 0; j < ny; j++)
+        for(int i = 0; i < nx; i++)
+            texcoords.push_back(vec2(float(i)/(nx-1), float(j)/(ny-1)));
+    return texcoords;
+}
 std::vector<int> Terrain2D::get_indexes() const{
     std::vector<int> indexes = std::vector<int>();
     //value are indexed:

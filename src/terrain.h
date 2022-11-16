@@ -56,6 +56,8 @@ public:
     std::vector<vec3> get_positions() const;
     //! return the list of Normals representing the mesh
     std::vector<vec3> get_normals() const;
+    //! return the list of uv coordinate representing the mesh
+    std::vector<vec2> get_texcoords() const;
     //! return the list of indexes representing the mesh
     std::vector<int> get_indexes() const;
     
