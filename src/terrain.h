@@ -15,8 +15,6 @@ private:
 protected:
     Point min_p; //! min angle of the bouding box of the terrain
     Point max_p; //! min angle of the bouding box of the terrain
-    InfinitTexture2D *texture; //! texture to compute heights
-
 public:
     Terrain2D(InfinitTexture2D *texture, vec2 min_p, vec2 max_p, int nx, int ny);
     ~Terrain2D(){};
@@ -52,16 +50,18 @@ public:
     bool ray_intersection(Point o, Vector d, Point* intersection) const;
     bool ray_intersection(Point o, Vector d) const;
 
+    //! return the scalarfield of the slope
+    ScalarField2D get_slopes() const;
+    //! return the scalarfield od the occlusion
+    ScalarField2D get_occlusions() const;
+
     //! return the list of Points representing the mesh
     std::vector<vec3> get_positions() const;
     //! return the list of Normals representing the mesh
     std::vector<vec3> get_normals() const;
     //! return the list of indexes representing the mesh
     std::vector<int> get_indexes() const;
-    //! return the list of Colors representing the slope at each node
-    std::vector<Color> get_slope_color() const;
-    //! return the list of Colors representing the slope at each node
-    std::vector<Color> get_occlusion_color() const;
+    
 };
 
 #endif

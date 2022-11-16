@@ -27,12 +27,30 @@ public:
     float get_value(int i, int j) const;
     //! set the value at node (i, j)
     void set_value(int i, int j, float v);
+    //! return the index in the values vector of the node (i, j)
+    int get_index(int i, int j) const;
     //! export as a grayscale image
     void export_as_image(const char *file) const;
+    //! return the values vector
+    std::vector<float> get_values() const; 
+    //! return the value vector as color
+    std::vector<Color> get_values_as_color() const; 
 
 //! TODO
     // float laplacian(int i, int j);
 
 };
+
+inline float ScalarField2D::get_value(int i, int j) const{
+    return values[j*nx + i];
+}
+
+inline void ScalarField2D::set_value(int i, int j, float v){
+    values[j*nx + i] = v;
+}
+
+inline int ScalarField2D::get_index(int i, int j) const{
+    return j*nx+i;
+}
 
 #endif

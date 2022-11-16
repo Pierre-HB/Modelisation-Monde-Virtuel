@@ -6,7 +6,7 @@
 #include "image.h"
 #include "image_io.h"
 
-Terrain2D::Terrain2D(InfinitTexture2D *texture, vec2 min_p, vec2 max_p, int nx, int ny): texture(texture){
+Terrain2D::Terrain2D(InfinitTexture2D *texture, vec2 min_p, vec2 max_p, int nx, int ny){
     this->nx = nx;
     this->ny = ny;
     this->min_p = Point(min_p.x, min_p.y, 0);
@@ -32,7 +32,30 @@ float Terrain2D::height(int i, int j) const{
     return get_value(i, j);
 }
 float Terrain2D::height(float x, float y) const{
-    return texture->value(x, y);
+    float i = nx*(x-min_p.x)/(max_p.x-min_p.x);
+    float j = ny*(y-min_p.y)/(max_p.y-min_p.y);
+    if(i < 0 || i > nx || j < 0 || j > ny)
+        return 0;
+    
+    int i_0 = floor(i);
+    float s_i = i - i_0;
+    int j_0 = floor(j);
+    float s_j = j - j_0;
+
+    //top and right border case
+    if(s_i == 0 && s_j == 0)
+        return get_value(i_0, j_0);
+    if(s_i == 0)
+        return get_value(i_0, j_0)*(1-s_j)
+             + get_value(i_0, j_0+1)*s_j;
+    if(s_j == 0)
+        return get_value(i_0, j_0)*(1-s_i)
+             + get_value(i_0+1, j_0)*s_i;
+
+    return get_value(i_0, j_0)*(1-s_i)*(1-s_j)
+         + get_value(i_0, j_0+1)*(1-s_i)*s_j
+         + get_value(i_0+1, j_0)*s_i*(1-s_j)
+         + get_value(i_0+1, j_0+1)*s_i*s_j;
 }
 
 Point Terrain2D::point(int i, int j) const{
@@ -184,22 +207,20 @@ std::vector<int> Terrain2D::get_indexes() const{
     return indexes;   
 }
 
-std::vector<Color> Terrain2D::get_slope_color() const{
-    std::vector<Color> colors = std::vector<Color>();
+ScalarField2D Terrain2D::get_slopes() const{
+    std::vector<float> slopes = std::vector<float>(values.size());
     for(int j = 0; j < ny; j++)
         for(int i = 0; i < nx; i++)
-            colors.push_back(Color(20*slope(i, j)/slope_max));
-    return colors;
+            slopes[get_index(i, j)] = 20*slope(i, j)/slope_max;
+    return ScalarField2D(slopes, nx, ny);
 }
 
-std::vector<Color> Terrain2D::get_occlusion_color() const{
-    std::vector<Color> colors = std::vector<Color>();
+ScalarField2D Terrain2D::get_occlusions() const{
+    std::vector<float> ambiants = std::vector<float>(values.size());
     
     // #pragma omp parallel for
     for(int j = 0; j < ny; j++)
-        for(int i = 0; i < nx; i++){
-            //std::cout << "ambiant of (" << i << ", " << j << ")" << std::endl;
-            colors.push_back(Color(ambiant_occlusion(i, j)));
-        }
-    return colors;
+        for(int i = 0; i < nx; i++)
+            ambiants[get_index(i, j)] = ambiant_occlusion(i, j);
+    return ScalarField2D(ambiants, nx, ny);
 }

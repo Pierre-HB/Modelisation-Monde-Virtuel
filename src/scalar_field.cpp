@@ -30,10 +30,14 @@ void ScalarField2D::export_as_image(const char *file) const{
     write_image(image, file);
 }
 
-float ScalarField2D::get_value(int i, int j) const{
-    return values[j*nx + i];
+std::vector<float> ScalarField2D::get_values() const{
+    return values;
 }
+std::vector<Color> ScalarField2D::get_values_as_color() const{
+    std::vector<Color> colors = std::vector<Color>(values.size());
+    for(size_t i = 0; i < values.size(); i++)
+        colors[i] = Color(values[i]);
+    return colors;
+} 
 
-void ScalarField2D::set_value(int i, int j, float v){
-    values[j*nx + i] = v;
-}
+
