@@ -3,6 +3,8 @@
 #include <random>
 #include "mat.h"
 
+ScalarField2D::ScalarField2D():values(){}
+ScalarField2D::ScalarField2D(const std::vector<float>& values, int nx, int ny):values(values), nx(nx), ny(ny){}
 
 float ScalarField2D::get_value(int i, int j) const{
     return values[j*nx + i];

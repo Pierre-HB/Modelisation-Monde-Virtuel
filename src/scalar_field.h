@@ -13,12 +13,18 @@ protected:
     int ny; //! Number of point on the y axis (second axis) of the gris
     std::vector<float> values; //! vector of size nx, ny. Value (i, j) is located at the position j*nx+i
     const float epsilon = 1.0e-3;
+    
+
+public:
+    //! empty constructor
+    ScalarField2D();
+    //! constructor from a list of value
+    ScalarField2D(const std::vector<float>& values, int nx, int ny);
     //! get the value at node (i, j)
     float get_value(int i, int j) const;
     //! set the value at node (i, j)
     void set_value(int i, int j, float v);
 
-public:
 //! TODO
     // float laplacian(int i, int j);
 
