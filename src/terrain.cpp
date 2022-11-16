@@ -73,7 +73,7 @@ vec2 Terrain2D::gradiant(int i, int j) const{
 
     if(i == 0){
         gradiant_x = (height(i+1, j) - height(i, j))/ex;
-    }else if(i == nx){
+    }else if(i == nx-1){
         gradiant_x = (height(i, j) - height(i-1, j))/ex;
     }else{
         gradiant_x = (height(i+1, j) - height(i-1, j))/(2*ex);
@@ -81,7 +81,7 @@ vec2 Terrain2D::gradiant(int i, int j) const{
 
     if(j == 0){
         gradiant_y = (height(i, j+1) - height(i, j))/ey;
-    }else if(j == ny){
+    }else if(j == ny-1){
         gradiant_y = (height(i, j) - height(i, j-1))/ey;
     }else{
         gradiant_y = (height(i, j+1) - height(i, j-1))/(2*ey);
@@ -211,8 +211,8 @@ ScalarField2D Terrain2D::get_slopes() const{
     std::vector<float> slopes = std::vector<float>(values.size());
     for(int j = 0; j < ny; j++)
         for(int i = 0; i < nx; i++)
-            slopes[get_index(i, j)] = 20*slope(i, j)/slope_max;
-    return ScalarField2D(slopes, nx, ny);
+            slopes[get_index(i, j)] = slope(i, j);
+    return ScalarField2D(slopes, nx, ny, min_p, max_p);
 }
 
 ScalarField2D Terrain2D::get_occlusions() const{
@@ -222,5 +222,5 @@ ScalarField2D Terrain2D::get_occlusions() const{
     for(int j = 0; j < ny; j++)
         for(int i = 0; i < nx; i++)
             ambiants[get_index(i, j)] = ambiant_occlusion(i, j);
-    return ScalarField2D(ambiants, nx, ny);
+    return ScalarField2D(ambiants, nx, ny, min_p, max_p);
 }

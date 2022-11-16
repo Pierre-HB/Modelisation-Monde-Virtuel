@@ -12,9 +12,6 @@ class Terrain2D: public ScalarField2D
 {
 private:
     float slope_max;
-protected:
-    Point min_p; //! min angle of the bouding box of the terrain
-    Point max_p; //! min angle of the bouding box of the terrain
 public:
     Terrain2D(InfinitTexture2D *texture, vec2 min_p, vec2 max_p, int nx, int ny);
     ~Terrain2D(){};

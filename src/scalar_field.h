@@ -14,6 +14,8 @@ protected:
     int ny; //! Number of point on the y axis (second axis) of the gris
     std::vector<float> values; //! vector of size nx, ny. Value (i, j) is located at the position j*nx+i
     const float epsilon = 1.0e-3;
+    Point min_p; //! min angle of the bouding box of the terrain
+    Point max_p; //! min angle of the bouding box of the terrain
     
 
 public:
@@ -22,7 +24,7 @@ public:
     //! copy
     ScalarField2D(const ScalarField2D& cpy);
     //! constructor from a list of value
-    ScalarField2D(const std::vector<float>& values, int nx, int ny);
+    ScalarField2D(const std::vector<float>& values, int nx, int ny, Point min_p, Point max_p);
     //! get the value at node (i, j)
     float get_value(int i, int j) const;
     //! set the value at node (i, j)
@@ -36,8 +38,10 @@ public:
     //! return the value vector as color
     std::vector<Color> get_values_as_color() const; 
 
-//! TODO
-    // float laplacian(int i, int j);
+    //! return the laplacian at node (i, j)
+    float laplacian(int i, int j) const;
+    //! return the scalarfield of the laplacian
+    ScalarField2D laplacian() const;
 
 };
 
