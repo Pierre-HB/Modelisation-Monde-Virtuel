@@ -36,7 +36,9 @@ public:
     //! return the values vector
     std::vector<float> get_values() const; 
     //! return the value vector as color
-    std::vector<Color> get_values_as_color() const; 
+    std::vector<Color> get_values_as_color() const;
+    //! return the scalarfield maped by the function f
+    ScalarField2D map(float (*function)(float)) const;
 
     //! return the laplacian at node (i, j)
     float laplacian(int i, int j) const;
