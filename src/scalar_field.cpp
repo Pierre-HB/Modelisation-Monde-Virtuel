@@ -43,6 +43,13 @@ std::vector<Color> ScalarField2D::get_values_as_color() const{
     return colors;
 } 
 
+ScalarField2D ScalarField2D::map(float (*function)(float)) const{
+    std::vector<float> tmp = std::vector<float>(values.size());
+    for(size_t i = 0; i < values.size(); i++)
+        tmp[i] = function(values[i]);
+    return ScalarField2D(tmp, nx, ny, min_p, max_p);
+}
+
 float ScalarField2D::laplacian(int i, int j) const{
     float laplacian_x = 0;
     float laplacian_y = 0;

@@ -17,14 +17,15 @@ int main( int argc, char **argv )
 
     Terrain2D t = Terrain2D(noise, vec2(-5, -5), vec2(5, 5), 250, 250);
     // t.get_occlusion_color();
-    std::cout << t.ambiant_occlusion(2, 2) << std::endl;;
     // t.export_as_image("test.png");
     // noise->export_as_image("noise.png");
     t.get_slopes().export_as_image("slope.png");
+    t.get_drains(0.1).map([](float x){return sqrt(x);}).export_as_image("drain.png");
     t.laplacian().export_as_image("laplacian.png");
     t.export_as_image("height.png");
-    // t.get_occlusions().export_as_image("occlusion.png", false);
-    const char* texture_file = "occlusion.png";
+    if(false)t.get_occlusions().export_as_image("occlusion.png", false);
+
+    const char* texture_file = "drain.png";
     SimpleApp simple_app = SimpleApp(1024, 640, t.get_positions(), t.get_normals(), t.get_texcoords(), texture_file, t.get_indexes());
     
     // SimpleApp simple_app = SimpleApp(1024, 640, t.get_positions(), t.get_normals(),t.get_slopes().get_values_as_color(), t.get_indexes());

@@ -29,19 +29,33 @@ Terrain2D::Terrain2D(InfinitTexture2D *texture, vec2 min_p, vec2 max_p, int nx, 
     slope_max = max_slope();
 }
 
-neighborhood Terrain2D::find_neighborhood(int i, int j) const{
+neighborhood Terrain2D::find_neighborhood(int i, int j, float p) const{
     neighborhood neighbors = neighborhood();
     neighbors.size = 0;
+    
+    float total_neighbor_coef = 0;
+
     for(int i_ = -1; i_ < 2; i_++){
         for(int j_ = -1; j_ < 2; j_++){
-            if(i+i_ >= 0 && i+i_ < nx && j+j_ > 0 && j+j_ < ny && (i!=i_ || j!=j_)){
+            if(i+i_ >= 0 && i+i_ < nx && j+j_ > 0 && j+j_ < ny && (i_!=0 || j_!=0)){
                 neighbors.x[neighbors.size] = i_;
                 neighbors.y[neighbors.size] = j_;
                 neighbors.length[neighbors.size] = sqrt(i_*i_ + j_*j_);
+
+                // neighbors.coef[neighbors.size] = get_value(i, j) - get_value(i+i_, j+j_);
+                neighbors.coef[neighbors.size] = std::max(0.0f, get_value(i, j) - get_value(i+i_, j+j_));
+                neighbors.coef[neighbors.size] = pow(neighbors.coef[neighbors.size], p);
+                total_neighbor_coef+=neighbors.coef[neighbors.size];
+
                 neighbors.size++;
             }
         }
     }
+    //normalisatoion
+    if(total_neighbor_coef != 0)
+        for(int i = 0; i < neighbors.size; i++)
+            neighbors.coef[i]/=total_neighbor_coef;
+        
     return neighbors;
 }
 
@@ -250,6 +264,27 @@ ScalarField2D Terrain2D::get_occlusions() const{
     return ScalarField2D(ambiants, nx, ny, min_p, max_p);
 }
 
-ScalarField2D Terrain2D::get_drains() const{
+ScalarField2D Terrain2D::get_drains(float p) const{
 
+    std::vector<float> drain = std::vector<float>(values.size(), 1.0f);
+    std::vector<heighCell> cells = std::vector<heighCell>(nx*ny);
+    for(int i = 0; i < nx; i++){
+        for(int j = 0; j < ny; j++){
+            cells[get_index(i, j)].height = get_value(i, j);
+            cells[get_index(i, j)].i = i;
+            cells[get_index(i, j)].j = j;
+        }
+    }
+    std::sort(cells.begin(), cells.end(), [](heighCell a, heighCell b) {
+        return a.height > b.height;
+    });
+    for(heighCell cell : cells){
+        int i = cell.i;
+        int j = cell.j;
+        neighborhood neighbors = find_neighborhood(i, j, p);
+        for(int k = 0; k < neighbors.size; k++)
+            drain[get_index(neighbors.x[k]+i, neighbors.y[k]+j)] += neighbors.coef[k]*drain[get_index(i, j)];
+    }
+
+    return ScalarField2D(drain, nx, ny, min_p, max_p);
 }

@@ -12,7 +12,14 @@ struct neighborhood{
     int size;
     int x[8];
     int y[8];
-    double length[8];
+    float length[8];
+    float coef[8];
+};
+
+struct heighCell{
+    float height;
+    int i;
+    int j;
 };
 
 class Terrain2D: public ScalarField2D
@@ -23,7 +30,8 @@ public:
     Terrain2D(InfinitTexture2D *texture, vec2 min_p, vec2 max_p, int nx, int ny);
     ~Terrain2D(){};
 
-    neighborhood find_neighborhood(int i, int j) const;
+    //! compute the neighborhood of a node(cell adjacent) with the distance between the two cell and the coeficent of down-flow with the metric L^p
+    neighborhood find_neighborhood(int i, int j, float p = 4) const;
     //! height at the node (i, j)
     float height(int i, int j) const;
     //! height at the point (x, y)
@@ -58,8 +66,8 @@ public:
     ScalarField2D get_slopes() const;
     //! return the scalarfield of the occlusion
     ScalarField2D get_occlusions() const;
-    //! return the scalarfield of the drain
-    ScalarField2D get_drains() const;
+    //! return the scalarfield of the drain (p an optional parameter to define the norme use to compute the down-flow)
+    ScalarField2D get_drains(float p=4) const;
 
     //! return the list of Points representing the mesh
     std::vector<vec3> get_positions() const;
