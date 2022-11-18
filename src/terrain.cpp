@@ -29,6 +29,15 @@ Terrain2D::Terrain2D(InfinitTexture2D *texture, vec2 min_p, vec2 max_p, int nx, 
     slope_max = max_slope();
 }
 
+Terrain2D::Terrain2D(const ScalarField2D& sf){
+    values = sf.get_values();
+    nx = sf.get_nx();
+    ny = sf.get_ny();
+    min_p = sf.get_min_p();
+    max_p = sf.get_max_p();
+    slope_max = max_slope();
+}
+
 neighborhood Terrain2D::find_neighborhood(int i, int j, float p) const{
     neighborhood neighbors = neighborhood();
     neighbors.size = 0;

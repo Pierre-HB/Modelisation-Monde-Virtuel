@@ -25,6 +25,19 @@ public:
     ScalarField2D(const ScalarField2D& cpy);
     //! constructor from a list of value
     ScalarField2D(const std::vector<float>& values, int nx, int ny, Point min_p, Point max_p);
+
+    ScalarField2D& operator+=(const ScalarField2D& other);
+    ScalarField2D& operator*=(const ScalarField2D& other);
+    ScalarField2D& operator+=(const float& other);
+    ScalarField2D& operator*=(const float& other);
+
+    friend ScalarField2D operator+(ScalarField2D a, const ScalarField2D& b);
+    friend ScalarField2D operator*(ScalarField2D a, const ScalarField2D& b);
+    friend ScalarField2D operator+(ScalarField2D a, const float& b);
+    friend ScalarField2D operator*(ScalarField2D a, const float& b);
+    friend ScalarField2D operator+(const float& b, ScalarField2D a);
+    friend ScalarField2D operator*(const float& b, ScalarField2D a);
+
     //! get the value at node (i, j)
     float get_value(int i, int j) const;
     //! set the value at node (i, j)
@@ -35,11 +48,27 @@ public:
     void export_as_image(const char *file, bool normalisation = true) const;
     //! return the values vector
     std::vector<float> get_values() const; 
+    //! return nx
+    int get_nx() const{return nx;}
+    //! return ny
+    int get_ny() const{return ny;}
+    //! return min_p
+    Point get_min_p() const{return min_p;}
+    //! return max_p
+    Point get_max_p() const{return max_p;}
     //! return the value vector as color
     std::vector<Color> get_values_as_color() const;
     //! return the scalarfield maped by the function f
     ScalarField2D map(float (*function)(float)) const;
+    //! return the convolution with a kernel
+    //! kernel[i][j] is the kernel value at line i and collumn j
+    //! Be carefull during the convolution, the kernel is transpose
+    ScalarField2D convolution(const std::vector<std::vector<float>>& kernel) const;
 
+    //! return the scalarfield of the derivation with respect to x
+    ScalarField2D derivate_x() const;
+    //! return the scalarfield of the derivation with respect to y
+    ScalarField2D derivate_y() const;
     //! return the laplacian at node (i, j)
     float laplacian(int i, int j) const;
     //! return the scalarfield of the laplacian
@@ -59,4 +88,10 @@ inline int ScalarField2D::get_index(int i, int j) const{
     return j*nx+i;
 }
 
+inline ScalarField2D operator+(ScalarField2D a, const ScalarField2D& b){return a+=b;}
+inline ScalarField2D operator*(ScalarField2D a, const ScalarField2D& b){return a*=b;}
+inline ScalarField2D operator+(ScalarField2D a, const float& b){return a+=b;}
+inline ScalarField2D operator*(ScalarField2D a, const float& b){return a*=b;}
+inline ScalarField2D operator+(const float& b, ScalarField2D a){return a+=b;}
+inline ScalarField2D operator*(const float& b, ScalarField2D a){return a*=b;}
 #endif

@@ -28,6 +28,7 @@ private:
     float slope_max;
 public:
     Terrain2D(InfinitTexture2D *texture, vec2 min_p, vec2 max_p, int nx, int ny);
+    Terrain2D(const ScalarField2D& sf);
     ~Terrain2D(){};
 
     //! compute the neighborhood of a node(cell adjacent) with the distance between the two cell and the coeficent of down-flow with the metric L^p
