@@ -12,6 +12,19 @@ ScalarField2D::ScalarField2D(const ScalarField2D& cpy):nx(cpy.nx), ny(cpy.ny), v
 
 ScalarField2D::ScalarField2D(const std::vector<float>& values, int nx, int ny, Point min_p, Point max_p):nx(nx), ny(ny), values(values), min_p(min_p), max_p(max_p){}
 
+ScalarField2D ScalarField2D::update_min_max(){
+    float min_v = values[0];
+    float max_v = values[0];
+    for(size_t i = 1; i < values.size(); i++){
+        if(values[i] > max_v)
+            max_v = values[i];
+        if(values[i] < min_v)
+            min_v = values[i];
+    }
+    min_p.z = min_v;
+    max_p.z = max_v;
+    return *this;
+}
 void ScalarField2D::export_as_image(const char *file, bool normalisation) const{
     Image image(nx, ny, Color(0));
     float max_value = values[0];
@@ -22,6 +35,8 @@ void ScalarField2D::export_as_image(const char *file, bool normalisation) const{
         if(min_value > v)
             min_value = v;
     }
+    // float max_value = min_p.z;
+    // float min_value = max_p.z;
 
     for(int i = 0; i < nx; i++)
         for(int j = 0; j < ny; j++)
@@ -45,9 +60,11 @@ std::vector<Color> ScalarField2D::get_values_as_color() const{
 
 ScalarField2D ScalarField2D::map(float (*function)(float)) const{
     std::vector<float> tmp = std::vector<float>(values.size());
+    float max_v = function(values[0]);
+    float min_v = max_v;
     for(size_t i = 0; i < values.size(); i++)
         tmp[i] = function(values[i]);
-    return ScalarField2D(tmp, nx, ny, min_p, max_p);
+    return ScalarField2D(tmp, nx, ny, min_p, max_p).update_min_max();
 }
 
 ScalarField2D ScalarField2D::convolution(const std::vector<std::vector<float>>& kernel) const{
@@ -78,7 +95,7 @@ ScalarField2D ScalarField2D::convolution(const std::vector<std::vector<float>>& 
                 for(size_t l = 0; l < kernel[k].size(); l++)
                     new_value[j*new_nx+i]+=get_value(i+l, j+k)*kernel[k][l];
 
-    return ScalarField2D(new_value, new_nx, new_ny, new_min_p, new_max_p);
+    return ScalarField2D(new_value, new_nx, new_ny, new_min_p, new_max_p).update_min_max();
 }
 
 
@@ -87,6 +104,7 @@ ScalarField2D& ScalarField2D::operator+=(const ScalarField2D& other){
     assert(ny==other.ny);
     for(size_t i = 0; i < values.size(); i++)
         values[i]+=other.values[i];
+    update_min_max();
     return *this;
 }
 ScalarField2D& ScalarField2D::operator*=(const ScalarField2D& other){
@@ -94,16 +112,21 @@ ScalarField2D& ScalarField2D::operator*=(const ScalarField2D& other){
     assert(ny==other.ny);
     for(size_t i = 0; i < values.size(); i++)
         values[i]*=other.values[i];
+    update_min_max();
     return *this;
 }
 ScalarField2D& ScalarField2D::operator+=(const float& other){
     for(size_t i = 0; i < values.size(); i++)
         values[i]+=other;
+    max_p.z+=other;
+    min_p.z+=other;
     return *this;
 }
 ScalarField2D& ScalarField2D::operator*=(const float& other){
     for(size_t i = 0; i < values.size(); i++)
         values[i]*=other;
+    max_p.z*=other;
+    min_p.z*=other;
     return *this;
 }
 
@@ -122,7 +145,7 @@ ScalarField2D ScalarField2D::derivate_x() const{
     for(int j = 0; j < ny; j++)
         derivate[get_index(i, j)] = (get_value(i, j) - get_value(i-1, j))/ex;
     
-    return ScalarField2D(derivate, nx, ny, min_p, max_p);
+    return ScalarField2D(derivate, nx, ny, min_p, max_p).update_min_max();
 }
 ScalarField2D ScalarField2D::derivate_y() const{
     float ey = (max_p.y - min_p.y)/(ny-1);
@@ -139,7 +162,7 @@ ScalarField2D ScalarField2D::derivate_y() const{
     for(int i = 0; i < nx; i++)
         derivate[get_index(i, j)] = (get_value(i, j) - get_value(i, j-1))/ey;
     
-    return ScalarField2D(derivate, nx, ny, min_p, max_p);
+    return ScalarField2D(derivate, nx, ny, min_p, max_p).update_min_max();
 }
 
 float ScalarField2D::laplacian(int i, int j) const{
@@ -172,7 +195,7 @@ ScalarField2D ScalarField2D::laplacian() const{
     for(int i = 0; i < nx; i++)
         for(int j = 0; j < ny; j++)
             laplacians[get_index(i, j)] = laplacian(i, j);
-    return ScalarField2D(laplacians, nx, ny, min_p, max_p);
+    return ScalarField2D(laplacians, nx, ny, min_p, max_p).update_min_max();
 }
 
 

@@ -17,6 +17,16 @@ std::vector<std::vector<float>> gaussian_kernel(int size, float sigma = 1.0f){
     return kernel;
 }
 
+void erosion(Terrain2D& t){
+    for(int _ = 0; _ < 100; _++)
+        t+=0.0001 + (-0.00005)*t.get_drains().map([](float x){return float(pow(x, 0.5));})*t.get_slopes().map([](float x){return float(pow(x, 0.8));}) + (0.0001)*t.laplacian();
+}
+
+void hill(Terrain2D& t){
+    for(int _ = 0; _ < 1500; _++)
+        t+= (0.0001)*t.laplacian();
+}
+
 int main( int argc, char **argv )
 {
 
@@ -29,39 +39,20 @@ int main( int argc, char **argv )
 
     int res = 256;
     Terrain2D t = Terrain2D(noise, vec2(-5, -5), vec2(5, 5), res, res);
-    std::cout << "creating kernel" << std::endl;
-
     std::vector<std::vector<float>> kernel = gaussian_kernel(11, 3);
-    std::cout << "kernel : " << std::endl;
-    for(size_t i = 0; i < kernel.size(); i++){
-        for(size_t j = 0; j < kernel[i].size(); j++){
-            std::cout << kernel[i][j] << " ";
-        }
-        std::cout << std::endl;
-    }
 
-    ScalarField2D tmp = t.convolution(kernel);
-    Terrain2D t_ = Terrain2D(tmp);
+    Terrain2D t_ = Terrain2D(t.convolution(kernel));
 
-    tmp.export_as_image("mean.png");
-    for(int _ = 0; _ < 2; _++)
-        t_ +=0.001*t_.laplacian();
+    t_.export_as_image("mean.png");
     
-    ScalarField2D prev_fluvial = t_.get_drains(0.1)*t_.get_slopes();
 
-    ScalarField2D diff = 100000*t_.get_drains(0.1)*t_.get_slopes() + (-1)*t_;
     
     //Geologic equation:
-    for(int _ = 0; _ < 100; _++)
-        t_+=0.0001 + (-0.00005)*t_.get_drains().map([](float x){return float(pow(x, 0.5));})*t_.get_slopes().map([](float x){return float(pow(x, 0.8));}) + (0.0001)*t_.laplacian();
+    erosion(t_);
 
     //THIS IS WORKING, it smooth out really well the terrain
-    // for(int _ = 0; _ < 1500; _++)
-    //     t_+= (0.0001)*t_.laplacian();
+    // hill(t_);
 
-    diff.export_as_image("diff.png");
-
-    ScalarField2D post_fluvial = t_.get_drains(0.1)*t_.get_slopes();
 
     ScalarField2D l = t_.derivate_x() + t_.derivate_y();
     l.export_as_image("derivate.png");

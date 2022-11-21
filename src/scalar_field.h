@@ -38,6 +38,8 @@ public:
     friend ScalarField2D operator+(const float& b, ScalarField2D a);
     friend ScalarField2D operator*(const float& b, ScalarField2D a);
 
+    //! compute min and max value of field
+    ScalarField2D update_min_max();
     //! get the value at node (i, j)
     float get_value(int i, int j) const;
     //! set the value at node (i, j)

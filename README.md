@@ -16,6 +16,6 @@ There are several configuration for the makefile:
 
 ## TODO
  * paraleliser les calcul de l'occlusion
- * calcul du drainage
  * erosion thermique
  * erosion techtonique (grosse formule du cours)
+ * [bug] mauvais calcul des min_p.z et max_p.z qulque part, se vois lorsqu'on exporte les texture en utilisant min_p et max_p pour normaliser
