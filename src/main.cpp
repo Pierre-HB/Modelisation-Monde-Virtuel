@@ -29,7 +29,14 @@ void hill(Terrain2D& t){
 
 int main( int argc, char **argv )
 {
-
+    
+    std::cout << floor(-0.5) << ", " << floor(0.5) << std::endl;
+    std::cout << ((int)floor(-0.5) & 255) << ", " << ((int)floor(0.5) & 255) << std::endl;
+    std::cout << ((((int)floor(-0.5) & 255) + 1) & 255) << ", " << ((int)floor(0.5) & 255) << std::endl;
+    Perlin2D* n = new Perlin2D();
+    std::cout << "perin : " << n->value(0, 0.2) << std::endl;
+    InfinitTexture2D* perlin_noise = new InfinitTexture2DFromNoise(new Perlin2D());
+    perlin_noise->export_as_image("perlin.png");
     InfinitTexture2D* noise = new InfinitTexture2DFromNoise(new ValueGrid2D());
     noise = translation(noise, vec2(23, -34));
     noise = zoom(noise, vec2(0.5, 0.5));
@@ -38,17 +45,19 @@ int main( int argc, char **argv )
     noise = sum(noise, new InfinitTexture2DFromNoise(new ValueGrid2D()));
 
     int res = 256;
-    Terrain2D t = Terrain2D(noise, vec2(-5, -5), vec2(5, 5), res, res);
+    
+    Terrain2D t = Terrain2D(perlin_noise, vec2(-5, -5), vec2(5, 5), res, res);
+    // Terrain2D t = Terrain2D(noise, vec2(-5, -5), vec2(5, 5), res, res);
     std::vector<std::vector<float>> kernel = gaussian_kernel(11, 3);
 
     Terrain2D t_ = Terrain2D(t.convolution(kernel));
-
-    t_.export_as_image("mean.png");
+    // Terrain2D t_ = t;
+    // t_.export_as_image("mean.png");
     
 
     
     //Geologic equation:
-    erosion(t_);
+    // erosion(t_);
 
     //THIS IS WORKING, it smooth out really well the terrain
     // hill(t_);
