@@ -11,8 +11,6 @@ float ValueGrid1D::value(float x) const{
     return (1+cos(123456789*whole)*(1-s) + cos(123456789*(whole+1))*s)/2;
 }
 
-
-
 float ValueGrid2D::value(float x, float y) const{
     float whole_x = floor(x);
     float dec_x = x - whole_x;

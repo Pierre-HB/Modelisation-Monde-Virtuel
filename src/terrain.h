@@ -28,6 +28,7 @@ private:
     float slope_max;
 public:
     Terrain2D(InfinitTexture2D *texture, vec2 min_p, vec2 max_p, int nx, int ny);
+    Terrain2D(const char *filename, vec2 min_p, vec2 max_p);
     Terrain2D(const ScalarField2D& sf);
     ~Terrain2D(){};
 

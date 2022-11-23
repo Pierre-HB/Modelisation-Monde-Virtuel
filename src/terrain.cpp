@@ -38,6 +38,33 @@ Terrain2D::Terrain2D(const ScalarField2D& sf){
     slope_max = max_slope();
 }
 
+Terrain2D::Terrain2D(const char *filename, vec2 min_p, vec2 max_p){
+    Image image = read_image(filename);
+    this->nx = image.width();
+    this->ny = image.height();
+    this->min_p = Point(min_p.x, min_p.y, 0);
+    this->max_p = Point(max_p.x, max_p.y, 0);
+    values = std::vector<float>(nx*ny);
+
+    for(int j = 0; j < ny; j++){
+        for(int i = 0; i < nx; i++){
+            float x = float(i)/(nx-1) * (max_p.x-min_p.x) + min_p.x;
+            float y = float(j)/(ny-1) * (max_p.y-min_p.y) + min_p.y;
+            float z = image(i, j).r;
+            set_value(i, j, z);
+            if(this->min_p.z > z)
+                this->min_p.z = z;
+            if(this->max_p.z < z)
+                this->max_p.z = z;
+        }
+    }
+    slope_max = max_slope();
+}
+
+
+
+
+
 neighborhood Terrain2D::find_neighborhood(int i, int j, float p) const{
     neighborhood neighbors = neighborhood();
     neighbors.size = 0;
