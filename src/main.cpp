@@ -30,14 +30,12 @@ void hill(Terrain2D& t){
 int main( int argc, char **argv )
 {
 
-    InfinitTexture2D* perlin_noise = new InfinitTexture2DFromNoise(new Perlin2D());
-    perlin_noise->export_as_image("perlin.png");
     InfinitTexture2D* noise = new InfinitTexture2DFromNoise(new Perlin2D());
     noise = translation(noise, vec2(23, -34));
-    noise = zoom(noise, vec2(0.5, 0.5));
+    noise = zoom(noise, vec2(0.25, 0.25));
     noise = scale(noise, 2);
     noise = rotation(noise, M_PI/7);
-    noise = sum(noise, new InfinitTexture2DFromNoise(new Perlin2D()));
+    noise = sum(noise, scale(new InfinitTexture2DFromNoise(new Perlin2D()), 0.25));
 
     int res = 256;
     
@@ -45,37 +43,33 @@ int main( int argc, char **argv )
     Terrain2D t = Terrain2D(noise, vec2(-5, -5), vec2(5, 5), res, res);
     std::vector<std::vector<float>> kernel = gaussian_kernel(11, 3);
 
-    Terrain2D t_ = Terrain2D(t.convolution(kernel));
+    // Terrain2D t_ = Terrain2D(t.convolution(kernel));
     // Terrain2D t_ = Terrain2D("height.png", vec2(-5, -5), vec2(5, 5));
-    // Terrain2D t_ = t;
+    Terrain2D t_ = t;
+    
     // t_.export_as_image("mean.png");
     
 
     //THIS IS WORKING, it smooth out really well the terrain
-    hill(t_);
+    // hill(t_);
 
     //Geologic equation:
-    erosion(t_);
+    // erosion(t_);
 
     
 
 
-    ScalarField2D l = t_.derivate_x() + t_.derivate_y();
-    l.export_as_image("derivate.png");
-
-    // t.get_occlusion_color();
-    // t.export_as_image("test.png");
-    // noise->export_as_image("noise.png");
+    (t_.derivate_x() + t_.derivate_y()).export_as_image("derivate.png");
     t_.get_slopes().export_as_image("slope.png");
     t_.get_drains().map([](float x){return sqrt(x);}).export_as_image("drain.png");
-    (t_.get_drains(0.1)*t_.get_slopes()).map([](float x){return sqrt(x);}).export_as_image("drain and slope.png");
+    (t_.get_drains()*t_.get_slopes()).map([](float x){return sqrt(x);}).export_as_image("drain and slope.png");
     t_.laplacian().export_as_image("laplacian.png");
     t_.export_as_image("height.png");
-    if(false)t_.get_occlusions().export_as_image("occlusion.png", false);
+    if(true)t_.get_occlusions(256).export_as_image("occlusion.png");
 
-    const char* texture_file = "diff.png";
-    // SimpleApp simple_app = SimpleApp(1024, 640, t_.get_positions(), t_.get_normals(), t_.get_texcoords(), texture_file, t_.get_indexes());
-    SimpleApp simple_app = SimpleApp(1024, 640, t_.get_positions(), t_.get_normals(), t_.get_indexes());
+    const char* texture_file = "occlusion.png";
+    SimpleApp simple_app = SimpleApp(1024, 640, t_.get_positions(), t_.get_normals(), t_.get_texcoords(), texture_file, t_.get_indexes());
+    // SimpleApp simple_app = SimpleApp(1024, 640, t_.get_positions(), t_.get_normals(), t_.get_indexes());
     
     // SimpleApp simple_app = SimpleApp(1024, 640, t.get_positions(), t.get_normals(),t.get_slopes().get_values_as_color(), t.get_indexes());
     

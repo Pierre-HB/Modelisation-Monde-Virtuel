@@ -99,15 +99,23 @@ float Terrain2D::height(int i, int j) const{
     return get_value(i, j);
 }
 float Terrain2D::height(float x, float y) const{
-    float i = nx*(x-min_p.x)/(max_p.x-min_p.x);
-    float j = ny*(y-min_p.y)/(max_p.y-min_p.y);
-    if(i < 0 || i > nx || j < 0 || j > ny)
-        return 0;
+    float i = (nx-1)*(x-min_p.x)/(max_p.x-min_p.x);
+    float j = (ny-1)*(y-min_p.y)/(max_p.y-min_p.y);
+    if(i < 0)
+        i = 0;
+    if(i > nx-1)
+        i = nx-1;
+    if(j < 0)
+        j = 0;
+    if(j > ny-1)
+        j = ny-1;
+    
     
     int i_0 = floor(i);
     float s_i = i - i_0;
     int j_0 = floor(j);
     float s_j = j - j_0;
+
 
     //top and right border case
     if(s_i == 0 && s_j == 0)
@@ -192,6 +200,7 @@ bool Terrain2D::ray_intersection(Point o, Vector d, Point* intersection) const{
     if(t_min > t_max || t_max < 0)
         return false;
     
+    
     float t = t_min;
     //o is in the bouding box
     if(t_min < 0)
@@ -199,30 +208,27 @@ bool Terrain2D::ray_intersection(Point o, Vector d, Point* intersection) const{
 
     //search for an intersection on the segment [o+t_min*d, o+t_max*d]
     int nb_iteration = 0;
-    int max_iteration = 1000;
+    int max_iteration = 10000;
     while(t_min < t_max && nb_iteration < max_iteration){
         nb_iteration++;
         Point p = o + d*t_min;
         float h = abs(p.z-height(p.x, p.y));
+
         if(h < epsilon){
             *intersection = p;
             return true;
         }
-        t_min+= h/slope_max;
+        t_min+= epsilon;
     }
 
     return false;
 }
 
-bool Terrain2D::ray_intersection(Point o, Vector d) const{
-    return ray_intersection(o, d, new Point());
-}
-
-float Terrain2D::ambiant_occlusion(int i, int j) const{
+float Terrain2D::ambiant_occlusion(int i, int j, int nb_ray) const{
     float ambiant = 0;
-    int nb_ray = 64;
     std::uniform_real_distribution<float> u01(0.0, 1.0);
     std::default_random_engine rng(42);
+
     for(int _ = 0; _ < nb_ray; _++){
         float r1 = u01(rng);
         float r2 = u01(rng);
@@ -231,7 +237,7 @@ float Terrain2D::ambiant_occlusion(int i, int j) const{
         dir = Rotation(Vector(0, 0, 1), n)(dir);
         //float proba_dir = 1/(2*M_PI);
 
-        Point o = point(i, j) + epsilon*n;
+        Point o = point(i, j) + 2*epsilon*n;
 
         if(!ray_intersection(o, dir))
             ambiant+=1.0/nb_ray;
@@ -290,13 +296,13 @@ ScalarField2D Terrain2D::get_slopes() const{
     return ScalarField2D(slopes, nx, ny, min_p, max_p);
 }
 
-ScalarField2D Terrain2D::get_occlusions() const{
+ScalarField2D Terrain2D::get_occlusions(int nb_ray) const{
     std::vector<float> ambiants = std::vector<float>(values.size());
     
-    // #pragma omp parallel for
+    #pragma omp parallel for
     for(int j = 0; j < ny; j++)
         for(int i = 0; i < nx; i++)
-            ambiants[get_index(i, j)] = ambiant_occlusion(i, j);
+            ambiants[get_index(i, j)] = ambiant_occlusion(i, j, nb_ray);
     return ScalarField2D(ambiants, nx, ny, min_p, max_p);
 }
 

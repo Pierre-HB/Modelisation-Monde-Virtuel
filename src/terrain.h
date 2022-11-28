@@ -51,7 +51,7 @@ public:
     //! max slope of the terrain
     float max_slope() const;
     //! ambiant occlusion at the node (i, j)
-    float ambiant_occlusion(int i, int j) const;
+    float ambiant_occlusion(int i, int j, int nb_ray=64) const;
 
     /**
      * @brief return the intersection point with a ray
@@ -61,13 +61,12 @@ public:
      * @param intersection : optional, the ref of a vec3 that will be set to the inetersection if there is an intersection
      * @return bool : true if there is an intersection
      */
-    bool ray_intersection(Point o, Vector d, Point* intersection) const;
-    bool ray_intersection(Point o, Vector d) const;
+    bool ray_intersection(Point o, Vector d, Point* intersection = new Point()) const;
 
     //! return the scalarfield of the slope
     ScalarField2D get_slopes() const;
     //! return the scalarfield of the occlusion
-    ScalarField2D get_occlusions() const;
+    ScalarField2D get_occlusions(int nb_ray=64) const;
     //! return the scalarfield of the drain (p an optional parameter to define the norme use to compute the down-flow)
     ScalarField2D get_drains(float p=4) const;
 

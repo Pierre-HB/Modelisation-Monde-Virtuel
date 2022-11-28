@@ -75,7 +75,7 @@ int SimpleApp::render( )
         Transform view= m_camera.view();
         Transform projection= m_camera.projection(window_width(), window_height(), 45);
         
-        // float length_normal = 0.01;
+        // float length_normal = 0.1;
         // param.debug_normals(length_normal);
         param.texture(m_texture);
         param.model(Identity()).view(view).projection(projection);
