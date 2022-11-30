@@ -38,6 +38,7 @@ int main( int argc, char **argv )
     noise = sum(noise, scale(new InfinitTexture2DFromNoise(new Perlin2D()), 0.25));
 
     int res = 256;
+    // res = 64;
     
     // Terrain2D t = Terrain2D(perlin_noise, vec2(-5, -5), vec2(5, 5), res, res);
     Terrain2D t = Terrain2D(noise, vec2(-5, -5), vec2(5, 5), res, res);
@@ -65,7 +66,7 @@ int main( int argc, char **argv )
     (t_.get_drains()*t_.get_slopes()).map([](float x){return sqrt(x);}).export_as_image("drain and slope.png");
     t_.laplacian().export_as_image("laplacian.png");
     t_.export_as_image("height.png");
-    if(true)t_.get_occlusions(256).export_as_image("occlusion.png");
+    if(false)t_.get_occlusions(256).export_as_image("occlusion.png", false);
 
     const char* texture_file = "occlusion.png";
     SimpleApp simple_app = SimpleApp(1024, 640, t_.get_positions(), t_.get_normals(), t_.get_texcoords(), texture_file, t_.get_indexes());
