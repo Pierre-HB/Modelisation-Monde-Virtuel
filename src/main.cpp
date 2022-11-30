@@ -29,7 +29,7 @@ void hill(Terrain2D& t){
 
 int main( int argc, char **argv )
 {
-
+    std::cout << "starting" << std::endl;
     InfinitTexture2D* noise = new InfinitTexture2DFromNoise(new Perlin2D());
     noise = translation(noise, vec2(23, -34));
     noise = zoom(noise, vec2(0.25, 0.25));
