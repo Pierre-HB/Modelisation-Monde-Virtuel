@@ -299,10 +299,15 @@ ScalarField2D Terrain2D::get_slopes() const{
 ScalarField2D Terrain2D::get_occlusions(int nb_ray) const{
     std::vector<float> ambiants = std::vector<float>(values.size());
     
+    int lines = 0;
+    std::cout << "[0/" << ny << "]" << std::flush;
     #pragma omp parallel for
-    for(int j = 0; j < ny; j++)
+    for(int j = 0; j < ny; j++){
         for(int i = 0; i < nx; i++)
             ambiants[get_index(i, j)] = ambiant_occlusion(i, j, nb_ray);
+        std::cout << "\33[2K\r[" << ++lines << "/" << ny << "]" << std::flush;
+    }
+        
     return ScalarField2D(ambiants, nx, ny, min_p, max_p);
 }
 
