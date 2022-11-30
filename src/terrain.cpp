@@ -13,6 +13,7 @@ Terrain2D::Terrain2D(InfinitTexture2D *texture, vec2 min_p, vec2 max_p, int nx, 
     this->min_p = Point(min_p.x, min_p.y, 0);
     this->max_p = Point(max_p.x, max_p.y, 0);
     values = std::vector<float>(nx*ny);
+    path = std::vector<bool>(nx*ny, false);
 
     for(int j = 0; j < ny; j++){
         for(int i = 0; i < nx; i++){
@@ -30,9 +31,10 @@ Terrain2D::Terrain2D(InfinitTexture2D *texture, vec2 min_p, vec2 max_p, int nx, 
 }
 
 Terrain2D::Terrain2D(const ScalarField2D& sf){
-    values = sf.get_values();
+    values = sf.get_values();    
     nx = sf.get_nx();
     ny = sf.get_ny();
+    path = std::vector<bool>(nx*ny, false);
     min_p = sf.get_min_p();
     max_p = sf.get_max_p();
     slope_max = max_slope();
@@ -45,6 +47,7 @@ Terrain2D::Terrain2D(const char *filename, vec2 min_p, vec2 max_p){
     this->min_p = Point(min_p.x, min_p.y, 0);
     this->max_p = Point(max_p.x, max_p.y, 0);
     values = std::vector<float>(nx*ny);
+    path = std::vector<bool>(nx*ny, false);
 
     for(int j = 0; j < ny; j++){
         for(int i = 0; i < nx; i++){
@@ -218,7 +221,7 @@ bool Terrain2D::ray_intersection(Point o, Vector d, Point* intersection) const{
             *intersection = p;
             return true;
         }
-        t_min+= epsilon;
+        t_min+= h/slope_max;
     }
 
     return false;
@@ -245,6 +248,91 @@ float Terrain2D::ambiant_occlusion(int i, int j, int nb_ray) const{
     return ambiant;
 }
 
+float Terrain2D::path_cost(vec2 start, vec2 end) const{
+    float z = height(start.x, start.y) - height(end.x, end.y);
+    float x = start.x - end.x;
+    float y = start.y - end.y;
+    float coef = 1;
+    if(height(end.x, end.y) < 0)
+        coef = 10;
+    return coef*sqrt(x*x + y*y + 10*z*z);
+}
+
+adjacency_list_t Terrain2D::get_adjacency_list(int n, int scale) const{
+    int m_nx = nx/scale;
+    int m_ny = ny/scale;
+    adjacency_list_t adjacency_list = std::vector<std::vector<neighbor>>(m_nx*m_ny);
+
+    std::vector<std::pair<int, int>> mask = create_Mask_neighborhood(n);
+    for(int i = 0; i < m_nx; i++){
+        for(int j = 0; j < m_ny; j++){
+            Point p = point(i*scale, j*scale);
+            for(std::pair<int, int> m : mask){
+                int i_ = m.first + i;
+                int j_ = m.second + j;
+                Point p_ = point(i_*scale, j_*scale);
+                if(i_ >= 0 && i_ < m_nx && j_ >= 0 && j_ < m_ny){
+                    float cost = path_cost(vec2(p.x, p.y), vec2(p_.x, p_.y));
+                    adjacency_list[get_index(i, j, m_nx, m_ny)].push_back(neighbor(get_index(i_, j_, m_nx, m_ny), cost));
+                }
+            }
+        }
+    }
+    return adjacency_list;
+}
+
+void Terrain2D::draw_path(vec2 start, vec2 end, int n, int scale){
+    adjacency_list_t adj = get_adjacency_list(n, scale);
+    int m_nx = nx/scale;
+    int m_ny = ny/scale;
+    int i = (m_nx-1)*(start.x-min_p.x)/(max_p.x-min_p.x);
+    int j = (m_ny-1)*(start.y-min_p.y)/(max_p.y-min_p.y);
+    int i_ = (m_nx-1)*(end.x-min_p.x)/(max_p.x-min_p.x);
+    int j_ = (m_ny-1)*(end.y-min_p.y)/(max_p.y-min_p.y);
+    vertex_t source = get_index(i, j, m_nx, m_ny);
+    vertex_t dest = get_index(i_, j_, m_nx, m_ny);
+
+    std::vector<weight_t> min_distance;
+    std::vector<vertex_t> previous;
+
+    DijkstraComputePaths(source, adj, min_distance, previous);
+    std::list<vertex_t> path = DijkstraGetShortestPathTo(dest, previous);
+
+    for(vertex_t v : path){
+        std::pair<int, int> coord = get_coordinate(v, m_nx, m_ny);
+        // values[get_index(coord.first*scale, coord.second*scale)] = 0;
+        this->path[get_index(coord.first*scale, coord.second*scale)] = true;
+        for(int k = -10; k <= 10; k++){
+            for(int l = -10; l <= 10; l++){
+                int k_ = k+coord.first*scale;
+                int l_ = l+coord.second*scale;
+                if(k*k + l*l < 5*5 && k_ >= 0 && k_ < nx && l_ >= 0 && l_ < ny){
+                    this->path[get_index(k_, l_)] = true;
+
+                }
+
+            }
+        }
+    }
+
+}
+
+void Terrain2D::export_colored_terrain(const char *file) const{
+    Image image(nx, ny, Color(0));
+
+    for(int i = 0; i < nx; i++)
+        for(int j = 0; j < ny; j++)
+            if(path[get_index(i, j)])
+                image(i, j) = Color(0.8, 0.5, 0.3, 1);
+            else if(get_value(i, j) < 0)
+                image(i, j) = Color(0.15, 0.35, 0.75, 1);
+            else if(slope(i, j) < 0.5)
+                image(i, j) = Color(0.2, 0.7, 0.2, 1);
+            else
+                image(i, j) = Color(0.5, 0.5, 0.5, 1);
+    
+    write_image(image, file);
+}
 
 std::vector<vec3> Terrain2D::get_positions() const{
     std::vector<vec3> positions = std::vector<vec3>();
@@ -275,14 +363,14 @@ std::vector<int> Terrain2D::get_indexes() const{
     // nx - nx+1 - ...
     // 0  - 1    - ...
     for(int i = 0; i < nx-1; i++){
-        for(int j = 0; j < ny-1; j++){
-            indexes.push_back((j+0)*nx + (i+0));
-            indexes.push_back((j+1)*nx + (i+1));
-            indexes.push_back((j+1)*nx + (i+0));
+        for(int j = 0; j < ny-1; j++){ 
+            indexes.push_back(get_index(i+0, j+0));
+            indexes.push_back(get_index(i+1, j+1));
+            indexes.push_back(get_index(i+0, j+1));
 
-            indexes.push_back((j+0)*nx + (i+0));
-            indexes.push_back((j+0)*nx + (i+1));
-            indexes.push_back((j+1)*nx + (i+1));            
+            indexes.push_back(get_index(i+0, j+0));
+            indexes.push_back(get_index(i+1, j+0));
+            indexes.push_back(get_index(i+1, j+1));
         }
     }
     return indexes;   
@@ -296,9 +384,9 @@ ScalarField2D Terrain2D::get_slopes() const{
     return ScalarField2D(slopes, nx, ny, min_p, max_p);
 }
 
-ScalarField2D Terrain2D::get_occlusions(int nb_ray) const{
+ScalarField2D Terrain2D::get_occlusions(int nb_ray){
     std::vector<float> ambiants = std::vector<float>(values.size());
-    
+    slope_max = max_slope();
     int lines = 0;
     std::cout << "[0/" << ny << "]" << std::flush;
     #pragma omp parallel for

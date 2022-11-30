@@ -7,6 +7,7 @@
 #include "color.h"
 #include "infinit_texture.h"
 #include "scalar_field.h"
+#include "dijkstra.hpp"
 
 struct neighborhood{
     int size;
@@ -26,6 +27,7 @@ class Terrain2D: public ScalarField2D
 {
 private:
     float slope_max;
+    std::vector<bool> path; //grid of the same size as value telling if the node is on a path or not
 public:
     Terrain2D(InfinitTexture2D *texture, vec2 min_p, vec2 max_p, int nx, int ny);
     Terrain2D(const char *filename, vec2 min_p, vec2 max_p);
@@ -62,13 +64,22 @@ public:
      * @return bool : true if there is an intersection
      */
     bool ray_intersection(Point o, Vector d, Point* intersection = new Point()) const;
+    //! return the cost of traveling between two point
+    float path_cost(vec2 start, vec2 end) const;
+    //! return the edjey graph using the mask of size 'n' and a map scale of 'scale' (divide nx and ny by 'scale')
+    adjacency_list_t get_adjacency_list(int n, int scale) const;
+    //! draw the path between start and end on the terrain
+    void draw_path(vec2 start, vec2 end, int n=3, int scale=1);
+    
 
     //! return the scalarfield of the slope
     ScalarField2D get_slopes() const;
     //! return the scalarfield of the occlusion
-    ScalarField2D get_occlusions(int nb_ray=64) const;
+    ScalarField2D get_occlusions(int nb_ray=64);
     //! return the scalarfield of the drain (p an optional parameter to define the norme use to compute the down-flow)
     ScalarField2D get_drains(float p=4) const;
+    //! export a colored texture for the terrain. This texture show paths, water, grass, etc
+    void export_colored_terrain(const char *file) const;
 
     //! return the list of Points representing the mesh
     std::vector<vec3> get_positions() const;

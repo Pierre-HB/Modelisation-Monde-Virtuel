@@ -1,4 +1,40 @@
 #include "dijkstra.hpp"
+#include <numeric>
+
+int gcd(int a, int b){
+	int r = a % b;
+	if(r == 0)
+		return b;
+	return gcd(b, r);
+}
+
+std::vector<std::pair<int, int>> create_Mask_neighborhood(int n){
+    if(n == 1){
+        return std::vector<std::pair<int, int>>({std::pair<int, int>(0, 1),
+												std::pair<int, int>(1, 1),
+												std::pair<int, int>(1, 0),
+												std::pair<int, int>(1, -1),
+												std::pair<int, int>(0, -1),
+												std::pair<int, int>(-1, -1),
+												std::pair<int, int>(-1, 0),
+												std::pair<int, int>(-1, 1)});
+	}
+	std::vector<std::pair<int, int>> m_res_1 = create_Mask_neighborhood(n-1);
+	for(int i = 1; i < n; i++){
+		if(gcd(i, n) == 1){
+			m_res_1.push_back(std::pair<int, int>(i, n));
+			m_res_1.push_back(std::pair<int, int>(n, i));
+			m_res_1.push_back(std::pair<int, int>(-i, n));
+			m_res_1.push_back(std::pair<int, int>(-n, i));
+			m_res_1.push_back(std::pair<int, int>(i, -n));
+			m_res_1.push_back(std::pair<int, int>(n, -i));
+			m_res_1.push_back(std::pair<int, int>(-i, -n));
+			m_res_1.push_back(std::pair<int, int>(-n, -i));
+		}
+	}
+	return m_res_1;
+    
+}
 
 
 void DijkstraComputePaths(vertex_t source,

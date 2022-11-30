@@ -12,14 +12,20 @@ There are several configuration for the makefile:
  * `make config=release32` (not working)
 
 ## Bug report
- * mauvais calcul des min_p.z et max_p.z qulque part, se vois lorsqu'on exporte les texture en utilisant min_p et max_p pour normaliser
+ * Nothing
 
 ## TODO
  * erosion thermique
  * erosion techtonique (grosse formule du cours)
  * eclairage direct
- * chemins
  * vegetation
+ * Bezier curv ?
 
 ## What is done
- * TODO
+ * surcharge des operateur +, *, etc pour les scalar field
+ * surcharge des operateur +, *, etc pour les infinit texture
+ * convolution et map des scalar field
+ * export d'un scalar field sous forme d'image
+ * ray-tracing sur un terrain et calcul de l'eclairage ambiant
+ * bruit value et Perlin 2D
+ * Pathing

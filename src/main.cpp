@@ -4,6 +4,7 @@
 #include "scalar_field.h"
 #include "infinit_texture.h"
 #include "terrain.h"
+#include "dijkstra.hpp"
 
 std::vector<std::vector<float>> gaussian_kernel(int size, float sigma = 1.0f){
     float coef = 1.0/(2*M_PI*sigma*sigma);
@@ -29,6 +30,11 @@ void hill(Terrain2D& t){
 
 int main( int argc, char **argv )
 {
+
+    // std::vector<std::pair<int, int>> m = create_Mask_neighborhood(4);
+    // for(int i = 0; i < m.size(); i++){
+    //     std::cout << "(" << m[i].first << ", " << m[i].second << ")" << std::endl;
+    // }
     InfinitTexture2D* noise = new InfinitTexture2DFromNoise(new Perlin2D());
     noise = translation(noise, vec2(23, -34));
     noise = zoom(noise, vec2(0.25, 0.25));
@@ -36,8 +42,8 @@ int main( int argc, char **argv )
     noise = rotation(noise, M_PI/7);
     noise = sum(noise, scale(new InfinitTexture2DFromNoise(new Perlin2D()), 0.25));
 
-    int res = 256;
-    // res = 64;
+    // int res = 10;
+    int res = 64*4;
     
     // Terrain2D t = Terrain2D(perlin_noise, vec2(-5, -5), vec2(5, 5), res, res);
     Terrain2D t = Terrain2D(noise, vec2(-5, -5.03), vec2(5, 5.03), res, res);
@@ -56,6 +62,17 @@ int main( int argc, char **argv )
     //Geologic equation:
     // erosion(t_);
 
+    // adjacency_list_t adj = t.get_adjacency_list(2, 2);
+    // for(int i = 0; i < adj.size(); i++){
+    //     for(int j = 0; j < adj[i].size(); j++){
+    //         std::cout << i << " -> " << adj[i][j].target << " (" << adj[i][j].weight << ")" << std::endl;
+    //     }
+    // }
+
+    t_.draw_path(vec2(-4, -2), vec2(4.5, -2));
+    t_.export_colored_terrain("texture.png");
+
+
     
 
 
@@ -67,7 +84,7 @@ int main( int argc, char **argv )
     t_.export_as_image("height.png");
     if(false)t_.get_occlusions(256).export_as_image("occlusion.png", false);
 
-    const char* texture_file = "occlusion.png";
+    const char* texture_file = "texture.png";
     SimpleApp simple_app = SimpleApp(1024, 640, t_.get_positions(), t_.get_normals(), t_.get_texcoords(), texture_file, t_.get_indexes());
     // SimpleApp simple_app = SimpleApp(1024, 640, t_.get_positions(), t_.get_normals(), t_.get_indexes());
     

@@ -46,6 +46,12 @@ public:
     void set_value(int i, int j, float v);
     //! return the index in the values vector of the node (i, j)
     int get_index(int i, int j) const;
+    //! return the pair (i, j) assosciated to an index in the values array
+    std::pair<int, int> get_coordinate(int index) const;
+    //! return the index in the values vector of the node (i, j)
+    int get_index(int i, int j, int nx_, int ny_) const;
+    //! return the pair (i, j) assosciated to an index in the values array
+    std::pair<int, int> get_coordinate(int index, int nx_, int ny_) const;
     //! export as a grayscale image
     void export_as_image(const char *file, bool normalisation = true) const;
     //! return the values vector
@@ -88,6 +94,18 @@ inline void ScalarField2D::set_value(int i, int j, float v){
 
 inline int ScalarField2D::get_index(int i, int j) const{
     return j*nx+i;
+}
+
+inline std::pair<int, int> ScalarField2D::get_coordinate(int index) const{
+    return std::pair<int, int>(index % nx, index / nx);
+}
+
+inline int ScalarField2D::get_index(int i, int j, int nx_, int ny_) const{
+    return j*nx_ + i;
+}
+
+inline std::pair<int, int> ScalarField2D::get_coordinate(int index, int nx_, int ny_) const{
+    return std::pair<int, int>(index % nx_, index / nx_);
 }
 
 inline ScalarField2D operator+(ScalarField2D a, const ScalarField2D& b){return a+=b;}
