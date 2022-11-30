@@ -29,7 +29,6 @@ void hill(Terrain2D& t){
 
 int main( int argc, char **argv )
 {
-    std::cout << "starting" << std::endl;
     InfinitTexture2D* noise = new InfinitTexture2DFromNoise(new Perlin2D());
     noise = translation(noise, vec2(23, -34));
     noise = zoom(noise, vec2(0.25, 0.25));
@@ -41,7 +40,7 @@ int main( int argc, char **argv )
     // res = 64;
     
     // Terrain2D t = Terrain2D(perlin_noise, vec2(-5, -5), vec2(5, 5), res, res);
-    Terrain2D t = Terrain2D(noise, vec2(-5, -5), vec2(5, 5), res, res);
+    Terrain2D t = Terrain2D(noise, vec2(-5, -5.03), vec2(5, 5.03), res, res);
     std::vector<std::vector<float>> kernel = gaussian_kernel(11, 3);
 
     // Terrain2D t_ = Terrain2D(t.convolution(kernel));
