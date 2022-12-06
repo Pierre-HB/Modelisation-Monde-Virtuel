@@ -69,8 +69,9 @@ public:
     //! return the edjey graph using the mask of size 'n' and a map scale of 'scale' (divide nx and ny by 'scale')
     adjacency_list_t get_adjacency_list(int n, int scale) const;
     //! draw the path between start and end on the terrain
-    void draw_path(vec2 start, vec2 end, int n=3, int scale=1);
-    
+    void draw_path(vec2 start, vec2 end, float road_size = 1, int n=3, int scale=1);
+    //! set the water level at -10m
+    void apply_water(float water_level = -10.f);
 
     //! return the scalarfield of the slope
     ScalarField2D get_slopes() const;

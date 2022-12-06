@@ -69,14 +69,14 @@ int SimpleApp::render( )
         m_camera.translation((float) mx / (float) window_width(), (float) my / (float) window_height());
     
     // affiche l'objet pour le point de vue de la camera et avec une texture
-    const bool debug_normal = true;
+    const bool debug_normal = false;
     if(debug_normal){
         DrawParam param;
         Transform view= m_camera.view();
         Transform projection= m_camera.projection(window_width(), window_height(), 45);
         
-        // float length_normal = 0.1;
-        // param.debug_normals(length_normal);
+        float length_normal = 0.1;
+        param.debug_normals(length_normal);
         param.texture(m_texture);
         param.model(Identity()).view(view).projection(projection);
         param.draw(m_objet);

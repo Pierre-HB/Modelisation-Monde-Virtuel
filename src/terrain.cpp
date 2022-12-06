@@ -281,7 +281,7 @@ adjacency_list_t Terrain2D::get_adjacency_list(int n, int scale) const{
     return adjacency_list;
 }
 
-void Terrain2D::draw_path(vec2 start, vec2 end, int n, int scale){
+void Terrain2D::draw_path(vec2 start, vec2 end, float road_size, int n, int scale){
     adjacency_list_t adj = get_adjacency_list(n, scale);
     int m_nx = nx/scale;
     int m_ny = ny/scale;
@@ -298,15 +298,18 @@ void Terrain2D::draw_path(vec2 start, vec2 end, int n, int scale){
     DijkstraComputePaths(source, adj, min_distance, previous);
     std::list<vertex_t> path = DijkstraGetShortestPathTo(dest, previous);
 
+    float ex = (max_p.x - min_p.x)/(nx-1);
+    float ey = (max_p.y - min_p.y)/(ny-1);
+    float r = road_size/ex;
     for(vertex_t v : path){
         std::pair<int, int> coord = get_coordinate(v, m_nx, m_ny);
         // values[get_index(coord.first*scale, coord.second*scale)] = 0;
         this->path[get_index(coord.first*scale, coord.second*scale)] = true;
-        for(int k = -10; k <= 10; k++){
-            for(int l = -10; l <= 10; l++){
+        for(int k = -r; k <= r; k++){
+            for(int l = -r; l <= r; l++){
                 int k_ = k+coord.first*scale;
                 int l_ = l+coord.second*scale;
-                if(k*k + l*l < 5*5 && k_ >= 0 && k_ < nx && l_ >= 0 && l_ < ny){
+                if(k*k + l*l < r*r && k_ >= 0 && k_ < nx && l_ >= 0 && l_ < ny){
                     this->path[get_index(k_, l_)] = true;
 
                 }
@@ -317,19 +320,30 @@ void Terrain2D::draw_path(vec2 start, vec2 end, int n, int scale){
 
 }
 
+void Terrain2D::apply_water(float water_level){
+    for(int i = 0; i < nx; i++){
+        for(int j = 0; j < ny; j++){
+            if(get_value(i, j) < water_level){
+                min_p.z = water_level;
+                set_value(i, j, water_level);
+            }
+        }
+    }
+}
+
 void Terrain2D::export_colored_terrain(const char *file) const{
     Image image(nx, ny, Color(0));
 
     for(int i = 0; i < nx; i++)
         for(int j = 0; j < ny; j++)
             if(path[get_index(i, j)])
-                image(i, j) = Color(0.8, 0.5, 0.3, 1);
+                image(i, j) = Color(0.8, 0.5, 0.3);
             else if(get_value(i, j) < 0)
-                image(i, j) = Color(0.15, 0.35, 0.75, 1);
+                image(i, j) = Color(0.15, 0.35, 0.75);
             else if(slope(i, j) < 0.5)
-                image(i, j) = Color(0.2, 0.7, 0.2, 1);
+                image(i, j) = Color(0.2, 0.7, 0.2);
             else
-                image(i, j) = Color(0.5, 0.5, 0.5, 1);
+                image(i, j) = Color(0.5, 0.5, 0.5);
     
     write_image(image, file);
 }
