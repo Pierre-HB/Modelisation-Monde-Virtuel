@@ -21,6 +21,10 @@ There are several configuration for the makefile:
  * vegetation
  * Bezier curv ?
 
+## TO REALY DO
+ * Road network
+ * City developpement
+
 ## What is done
  * surcharge des operateur +, *, etc pour les scalar field
  * surcharge des operateur +, *, etc pour les infinit texture
