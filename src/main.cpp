@@ -45,7 +45,7 @@ int main( int argc, char **argv )
     noise = scale(noise, 500);
     noise = zoom(noise, vec2(1/500.0, 1/500.0));
     // int res = 10;
-    int res = 64*4;
+    int res = 64*4*4;
     
     // Terrain2D t = Terrain2D(perlin_noise, vec2(-5, -5), vec2(5, 5), res, res);
     // Terrain2D t = Terrain2D(noise, vec2(-5, -5.03), vec2(5, 5.03), res, res);
@@ -77,19 +77,21 @@ int main( int argc, char **argv )
     vec2 city3 = vec2(2000, 1800);
     vec2 city4 = vec2(500, -1000);
     vec2 city5 = vec2(-1500, 2100);
-    float road_size = 4;
-    t_.draw_path(city1, city2, 10*road_size);
-    t_.draw_path(city2, city3, 10*road_size);
-    t_.draw_path(city3, city1, 10*road_size);
+    std::vector<vec2> cities = std::vector<vec2>({city1, city2, city3, city4, city5});
+    float road_size = 1;
+    // t_.draw_path(city1, city2, 10*road_size);
+    // t_.draw_path(city2, city3, 10*road_size);
+    // t_.draw_path(city3, city1, 10*road_size);
 
-    t_.draw_path(city1, city4, 10*road_size);
-    t_.draw_path(city2, city4, 10*road_size);
-    t_.draw_path(city3, city4, 10*road_size);
+    // t_.draw_path(city1, city4, 10*road_size);
+    // t_.draw_path(city2, city4, 10*road_size);
+    // t_.draw_path(city3, city4, 10*road_size);
 
-    t_.draw_path(city1, city5, 10*road_size);
-    t_.draw_path(city2, city5, 10*road_size);
-    t_.draw_path(city3, city5, 10*road_size);
-    t_.draw_path(city4, city5, 10*road_size);
+    // t_.draw_path(city1, city5, 10*road_size);
+    // t_.draw_path(city2, city5, 10*road_size);
+    // t_.draw_path(city3, city5, 10*road_size);
+    // t_.draw_path(city4, city5, 10*road_size);
+    t_.draw_network_path(cities, 3, 10*road_size, 1.3);
 
     t_.export_colored_terrain("texture.png");
     t_.apply_water();

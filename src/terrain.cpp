@@ -320,6 +320,65 @@ void Terrain2D::draw_path(vec2 start, vec2 end, float road_size, int n, int scal
 
 }
 
+void Terrain2D::draw_network_path(std::vector<vec2> points, int n, float road_size, float tolerence){
+    adjacency_list_t adj = get_adjacency_list(n, 1);
+    std::vector<std::vector<weight_t>> min_distance;
+    std::vector<std::vector<vertex_t>> previous;
+    std::vector<int> indexes;
+
+    for(size_t k = 0; k < points.size(); k++){
+        int i = (nx-1)*(points[k].x-min_p.x)/(max_p.x-min_p.x);
+        int j = (ny-1)*(points[k].y-min_p.y)/(max_p.y-min_p.y);
+        min_distance.push_back(std::vector<weight_t>());
+        previous.push_back(std::vector<vertex_t>());
+        indexes.push_back(get_index(i, j));
+        DijkstraComputePaths(indexes[k], adj, min_distance[k], previous[k]);
+    }
+    std::vector<std::vector<weight_t>> network_distances = std::vector<std::vector<weight_t>>(points.size());
+    std::vector<std::vector<bool>> keep_path = std::vector<std::vector<bool>>(points.size());
+    //network_distances[i][j] : weight of the path i -> j
+    for(size_t i = 0; i < points.size(); i++){
+        for(size_t j = 0; j < points.size(); j++){
+            network_distances[i].push_back(min_distance[i][indexes[j]]);
+            keep_path[i].push_back(true);
+        }
+    }
+
+    for(size_t i = 0; i < points.size(); i++){
+        for(size_t j = 0; j < points.size(); j++){
+            for(size_t k = 0; k < points.size(); k++){
+                if(pow(network_distances[i][k], tolerence) + pow(network_distances[k][j], tolerence) < pow(network_distances[i][j], tolerence))
+                    keep_path[i][j] = false;
+            }
+        }
+    }
+
+    //drawing
+    for(size_t i = 0; i < points.size(); i++){
+        for(size_t j = 0; j < points.size(); j++){
+            if(!keep_path[i][j])
+                continue;
+            std::list<vertex_t> path = DijkstraGetShortestPathTo(indexes[j], previous[i]);
+            float ex = (max_p.x - min_p.x)/(nx-1);
+            float ey = (max_p.y - min_p.y)/(ny-1);
+            float r = road_size/ex;
+            for(vertex_t v : path){
+                std::pair<int, int> coord = get_coordinate(v);
+                this->path[v] = true;
+                for(int k = -r; k <= r; k++){
+                    for(int l = -r; l <= r; l++){
+                        int k_ = k+coord.first;
+                        int l_ = l+coord.second;
+                        if(k*k + l*l < r*r && k_ >= 0 && k_ < nx && l_ >= 0 && l_ < ny)
+                            this->path[get_index(k_, l_)] = true;
+                    }
+                }
+            }
+        }
+    }
+}
+
+
 void Terrain2D::apply_water(float water_level){
     for(int i = 0; i < nx; i++){
         for(int j = 0; j < ny; j++){

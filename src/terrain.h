@@ -70,6 +70,8 @@ public:
     adjacency_list_t get_adjacency_list(int n, int scale) const;
     //! draw the path between start and end on the terrain
     void draw_path(vec2 start, vec2 end, float road_size = 1, int n=3, int scale=1);
+    //! Draw a network connecting points. With a hight tolerence road might be longer (there will be lless road in the network)
+    void draw_network_path(std::vector<vec2> points, int n=3, float road_size=1, float tolerence=2);
     //! set the water level at -10m
     void apply_water(float water_level = -10.f);
 
