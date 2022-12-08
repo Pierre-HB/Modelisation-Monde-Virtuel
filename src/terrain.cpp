@@ -281,7 +281,7 @@ adjacency_list_t Terrain2D::get_adjacency_list(int n, int scale) const{
     return adjacency_list;
 }
 
-void Terrain2D::draw_path(vec2 start, vec2 end, float road_size, int n, int scale){
+void Terrain2D::draw_path(vec2 start, vec2 end, float road_size, int scale, int n){
     adjacency_list_t adj = get_adjacency_list(n, scale);
     int m_nx = nx/scale;
     int m_ny = ny/scale;
@@ -297,7 +297,6 @@ void Terrain2D::draw_path(vec2 start, vec2 end, float road_size, int n, int scal
 
     DijkstraComputePaths(source, adj, min_distance, previous);
     std::list<vertex_t> path = DijkstraGetShortestPathTo(dest, previous);
-    std::cout << "path length : " << path.size() << std::endl;
     float ex = (max_p.x - min_p.x)/(nx-1);
     float ey = (max_p.y - min_p.y)/(ny-1);
     float r = road_size/ex;
@@ -319,7 +318,7 @@ void Terrain2D::draw_path(vec2 start, vec2 end, float road_size, int n, int scal
 
 }
 
-void Terrain2D::draw_network_path(std::vector<vec2> points, int n, float road_size, float tolerence, int scale){
+void Terrain2D::draw_network_path(std::vector<vec2> points, float road_size, float tolerence, int scale, int n){
     adjacency_list_t adj = get_adjacency_list(n, scale);
 
     int m_nx = nx/scale;
@@ -361,7 +360,6 @@ void Terrain2D::draw_network_path(std::vector<vec2> points, int n, float road_si
             if(!keep_path[i][j])
                 continue;
             std::list<vertex_t> path = DijkstraGetShortestPathTo(indexes[j], previous[i]);
-            std::cout << "path length (" << i << "->" << j << "): " << path.size() << std::endl;
 
             float ex = (max_p.x - min_p.x)/(nx-1);
             float ey = (max_p.y - min_p.y)/(ny-1);
@@ -394,19 +392,23 @@ void Terrain2D::apply_water(float water_level){
     }
 }
 
-void Terrain2D::export_colored_terrain(const char *file) const{
-    Image image(nx, ny, Color(0));
+void Terrain2D::export_colored_terrain(const char *file, int scale) const{
+    int m_nx = nx*scale;
+    int m_ny = ny*scale;
+    Image image(m_nx, m_ny, Color(0));
 
     for(int i = 0; i < nx; i++)
         for(int j = 0; j < ny; j++)
-            if(path[get_index(i, j)])
-                image(i, j) = Color(0.8, 0.5, 0.3);
-            else if(get_value(i, j) < 0)
-                image(i, j) = Color(0.15, 0.35, 0.75);
-            else if(slope(i, j) < 0.5)
-                image(i, j) = Color(0.2, 0.7, 0.2);
-            else
-                image(i, j) = Color(0.5, 0.5, 0.5);
+            for(int k = 0; k < scale; k++)
+                for(int l = 0; l < scale; l++)
+                    if(path[get_index(i, j)])
+                        image(i*scale + k, j*scale + l) = Color(0.8, 0.5, 0.3);
+                    else if(get_value(i, j) < 0)
+                        image(i*scale + k, j*scale + l) = Color(0.15, 0.35, 0.75);
+                    else if(slope(i, j) < 0.5)
+                        image(i*scale + k, j*scale + l) = Color(0.2, 0.7, 0.2);
+                    else
+                        image(i*scale + k, j*scale + l) = Color(0.5, 0.5, 0.5);
     
     write_image(image, file);
 }

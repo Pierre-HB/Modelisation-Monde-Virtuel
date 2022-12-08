@@ -69,9 +69,9 @@ public:
     //! return the edjey graph using the mask of size 'n' and a map scale of 'scale' (divide nx and ny by 'scale')
     adjacency_list_t get_adjacency_list(int n, int scale) const;
     //! draw the path between start and end on the terrain
-    void draw_path(vec2 start, vec2 end, float road_size = 1, int n=3, int scale=1);
+    void draw_path(vec2 start, vec2 end, float road_size = 1, int scale=1, int n=3);
     //! Draw a network connecting points. With a hight tolerence road might be longer (there will be lless road in the network)
-    void draw_network_path(std::vector<vec2> points, int n=3, float road_size=1, float tolerence=2, int scale=1);
+    void draw_network_path(std::vector<vec2> points, float road_size=1, float tolerence=2, int scale=1, int n=3);
     //! set the water level at -10m
     void apply_water(float water_level = -10.f);
 
@@ -82,7 +82,7 @@ public:
     //! return the scalarfield of the drain (p an optional parameter to define the norme use to compute the down-flow)
     ScalarField2D get_drains(float p=4) const;
     //! export a colored texture for the terrain. This texture show paths, water, grass, etc
-    void export_colored_terrain(const char *file) const;
+    void export_colored_terrain(const char *file, int scale=1) const;
 
     //! return the list of Points representing the mesh
     std::vector<vec3> get_positions() const;

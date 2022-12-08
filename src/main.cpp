@@ -78,7 +78,7 @@ int main( int argc, char **argv )
     vec2 city4 = vec2(500, -1000);
     vec2 city5 = vec2(-1500, 2100);
     std::vector<vec2> cities = std::vector<vec2>({city1, city2, city3, city4, city5});
-    float road_size = 4;
+    float road_size = 1;
 
     // std::cout << "path length (0->1): ";
     // t_.draw_path(city1, city2, 10*road_size, 3, 4);
@@ -103,9 +103,9 @@ int main( int argc, char **argv )
     // std::cout << "path length (3->4): ";
     // t_.draw_path(city4, city5, 10*road_size, 3, 4);
     // std::cout << "NETWORK" << std::endl;
-    t_.draw_network_path(cities, 3, 10*road_size, 1.4, 4);
+    t_.draw_network_path(cities, 10*road_size, 1.4);
 
-    t_.export_colored_terrain("texture.png");
+    t_.export_colored_terrain("texture.png", 2);
     t_.apply_water();
 
 
