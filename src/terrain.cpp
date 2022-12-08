@@ -297,7 +297,7 @@ void Terrain2D::draw_path(vec2 start, vec2 end, float road_size, int n, int scal
 
     DijkstraComputePaths(source, adj, min_distance, previous);
     std::list<vertex_t> path = DijkstraGetShortestPathTo(dest, previous);
-
+    std::cout << "path length : " << path.size() << std::endl;
     float ex = (max_p.x - min_p.x)/(nx-1);
     float ey = (max_p.y - min_p.y)/(ny-1);
     float r = road_size/ex;
@@ -313,25 +313,27 @@ void Terrain2D::draw_path(vec2 start, vec2 end, float road_size, int n, int scal
                     this->path[get_index(k_, l_)] = true;
 
                 }
-
             }
         }
     }
 
 }
 
-void Terrain2D::draw_network_path(std::vector<vec2> points, int n, float road_size, float tolerence){
-    adjacency_list_t adj = get_adjacency_list(n, 1);
+void Terrain2D::draw_network_path(std::vector<vec2> points, int n, float road_size, float tolerence, int scale){
+    adjacency_list_t adj = get_adjacency_list(n, scale);
+
+    int m_nx = nx/scale;
+    int m_ny = ny/scale;
     std::vector<std::vector<weight_t>> min_distance;
     std::vector<std::vector<vertex_t>> previous;
     std::vector<int> indexes;
 
     for(size_t k = 0; k < points.size(); k++){
-        int i = (nx-1)*(points[k].x-min_p.x)/(max_p.x-min_p.x);
-        int j = (ny-1)*(points[k].y-min_p.y)/(max_p.y-min_p.y);
+        int i = (m_nx-1)*(points[k].x-min_p.x)/(max_p.x-min_p.x);
+        int j = (m_ny-1)*(points[k].y-min_p.y)/(max_p.y-min_p.y);
         min_distance.push_back(std::vector<weight_t>());
         previous.push_back(std::vector<vertex_t>());
-        indexes.push_back(get_index(i, j));
+        indexes.push_back(get_index(i, j, m_nx, m_ny));
         DijkstraComputePaths(indexes[k], adj, min_distance[k], previous[k]);
     }
     std::vector<std::vector<weight_t>> network_distances = std::vector<std::vector<weight_t>>(points.size());
@@ -359,16 +361,18 @@ void Terrain2D::draw_network_path(std::vector<vec2> points, int n, float road_si
             if(!keep_path[i][j])
                 continue;
             std::list<vertex_t> path = DijkstraGetShortestPathTo(indexes[j], previous[i]);
+            std::cout << "path length (" << i << "->" << j << "): " << path.size() << std::endl;
+
             float ex = (max_p.x - min_p.x)/(nx-1);
             float ey = (max_p.y - min_p.y)/(ny-1);
             float r = road_size/ex;
             for(vertex_t v : path){
-                std::pair<int, int> coord = get_coordinate(v);
-                this->path[v] = true;
+                std::pair<int, int> coord = get_coordinate(v, m_nx, m_ny);
+                // this->path[v] = true;
                 for(int k = -r; k <= r; k++){
                     for(int l = -r; l <= r; l++){
-                        int k_ = k+coord.first;
-                        int l_ = l+coord.second;
+                        int k_ = k+coord.first*scale;
+                        int l_ = l+coord.second*scale;
                         if(k*k + l*l < r*r && k_ >= 0 && k_ < nx && l_ >= 0 && l_ < ny)
                             this->path[get_index(k_, l_)] = true;
                     }
