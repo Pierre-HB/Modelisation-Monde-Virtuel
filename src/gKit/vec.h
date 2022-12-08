@@ -139,6 +139,12 @@ struct vec2
     float x, y;
 };
 
+float length(const vec2& v );
+vec2 operator- ( const vec2& u, const vec2& v );
+vec2 operator+ ( const vec2& u, const vec2& v );
+vec2 operator* ( const vec2& u, float v );
+vec2 operator/ ( const vec2& u, float v );
+
 
 //! vecteur generique, utilitaire.
 struct vec3

@@ -96,7 +96,7 @@ end
     
  -- description des fichiers communs
 gkit_files = { gkit_dir .. "/src/gKit/*.cpp", gkit_dir .. "/src/gKit/*.h" }
-other_files = { gkit_dir .. "/src/*.cpp", gkit_dir .. "/src/*.h" }
+other_files = { gkit_dir .. "/src/*.cpp", gkit_dir .. "/src/*.h", gkit_dir .. "/src/*.hpp" }
 
 
 -- quand ce premake4.lua est inclus par un autre premake qui definit no_project=true (donc quand gkit2light est utilisé comme une lib),

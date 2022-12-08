@@ -7,19 +7,18 @@
 #include "image_io.h"
 
 
+
 Terrain2D::Terrain2D(InfinitTexture2D *texture, vec2 min_p, vec2 max_p, int nx, int ny){
     this->nx = nx;
     this->ny = ny;
     this->min_p = Point(min_p.x, min_p.y, 0);
     this->max_p = Point(max_p.x, max_p.y, 0);
     values = std::vector<float>(nx*ny);
-    path = std::vector<bool>(nx*ny, false);
 
     for(int j = 0; j < ny; j++){
         for(int i = 0; i < nx; i++){
-            float x = float(i)/(nx-1) * (max_p.x-min_p.x) + min_p.x;
-            float y = float(j)/(ny-1) * (max_p.y-min_p.y) + min_p.y;
-            float z = texture->value(x, y);
+            vec2 v = get_vec(i, j);
+            float z = texture->value(v.x, v.y);
             set_value(i, j, z);
             if(this->min_p.z > z)
                 this->min_p.z = z;
@@ -34,7 +33,6 @@ Terrain2D::Terrain2D(const ScalarField2D& sf){
     values = sf.get_values();    
     nx = sf.get_nx();
     ny = sf.get_ny();
-    path = std::vector<bool>(nx*ny, false);
     min_p = sf.get_min_p();
     max_p = sf.get_max_p();
     slope_max = max_slope();
@@ -47,12 +45,9 @@ Terrain2D::Terrain2D(const char *filename, vec2 min_p, vec2 max_p){
     this->min_p = Point(min_p.x, min_p.y, 0);
     this->max_p = Point(max_p.x, max_p.y, 0);
     values = std::vector<float>(nx*ny);
-    path = std::vector<bool>(nx*ny, false);
 
     for(int j = 0; j < ny; j++){
         for(int i = 0; i < nx; i++){
-            float x = float(i)/(nx-1) * (max_p.x-min_p.x) + min_p.x;
-            float y = float(j)/(ny-1) * (max_p.y-min_p.y) + min_p.y;
             float z = image(i, j).r;
             set_value(i, j, z);
             if(this->min_p.z > z)
@@ -137,9 +132,8 @@ float Terrain2D::height(float x, float y) const{
 }
 
 Point Terrain2D::point(int i, int j) const{
-    float x = float(i)/(nx-1) * (max_p.x-min_p.x) + min_p.x;
-    float y = float(j)/(ny-1) * (max_p.y-min_p.y) + min_p.y;
-    return Point(x, y, height(i, j));
+    vec2 v = get_vec(i, j);
+    return Point(v.x, v.y, height(i, j));
 }
 
 vec2 Terrain2D::gradient(int i, int j) const{
@@ -299,23 +293,14 @@ void Terrain2D::draw_path(vec2 start, vec2 end, float road_size, int scale, int 
     std::list<vertex_t> path = DijkstraGetShortestPathTo(dest, previous);
     float ex = (max_p.x - min_p.x)/(nx-1);
     float ey = (max_p.y - min_p.y)/(ny-1);
-    float r = road_size/ex;
+    float r = road_size/std::min(ex, ey);
+
+    std::vector<vec2> path_points;
     for(vertex_t v : path){
         std::pair<int, int> coord = get_coordinate(v, m_nx, m_ny);
-        // values[get_index(coord.first*scale, coord.second*scale)] = 0;
-        this->path[get_index(coord.first*scale, coord.second*scale)] = true;
-        for(int k = -r; k <= r; k++){
-            for(int l = -r; l <= r; l++){
-                int k_ = k+coord.first*scale;
-                int l_ = l+coord.second*scale;
-                if(k*k + l*l < r*r && k_ >= 0 && k_ < nx && l_ >= 0 && l_ < ny){
-                    this->path[get_index(k_, l_)] = true;
-
-                }
-            }
-        }
+        path_points.push_back(vec2(get_vec(coord.first*scale, coord.second*scale)));
     }
-
+    paths.push_back(Path(path_points, road_size));
 }
 
 void Terrain2D::draw_network_path(std::vector<vec2> points, float road_size, float tolerence, int scale, int n){
@@ -357,25 +342,16 @@ void Terrain2D::draw_network_path(std::vector<vec2> points, float road_size, flo
     //drawing
     for(size_t i = 0; i < points.size(); i++){
         for(size_t j = 0; j < points.size(); j++){
-            if(!keep_path[i][j])
+            if(!keep_path[i][j] || i > j)
                 continue;
             std::list<vertex_t> path = DijkstraGetShortestPathTo(indexes[j], previous[i]);
 
-            float ex = (max_p.x - min_p.x)/(nx-1);
-            float ey = (max_p.y - min_p.y)/(ny-1);
-            float r = road_size/ex;
+            std::vector<vec2> path_points;
             for(vertex_t v : path){
                 std::pair<int, int> coord = get_coordinate(v, m_nx, m_ny);
-                // this->path[v] = true;
-                for(int k = -r; k <= r; k++){
-                    for(int l = -r; l <= r; l++){
-                        int k_ = k+coord.first*scale;
-                        int l_ = l+coord.second*scale;
-                        if(k*k + l*l < r*r && k_ >= 0 && k_ < nx && l_ >= 0 && l_ < ny)
-                            this->path[get_index(k_, l_)] = true;
-                    }
-                }
+                path_points.push_back(vec2(get_vec(coord.first*scale, coord.second*scale)));
             }
+            paths.push_back(Path(path_points, road_size));
         }
     }
 }
@@ -401,15 +377,29 @@ void Terrain2D::export_colored_terrain(const char *file, int scale) const{
         for(int j = 0; j < ny; j++)
             for(int k = 0; k < scale; k++)
                 for(int l = 0; l < scale; l++)
-                    if(path[get_index(i, j)])
-                        image(i*scale + k, j*scale + l) = Color(0.8, 0.5, 0.3);
-                    else if(get_value(i, j) < 0)
+                    if(get_value(i, j) < 0)
                         image(i*scale + k, j*scale + l) = Color(0.15, 0.35, 0.75);
                     else if(slope(i, j) < 0.5)
                         image(i*scale + k, j*scale + l) = Color(0.2, 0.7, 0.2);
                     else
                         image(i*scale + k, j*scale + l) = Color(0.5, 0.5, 0.5);
     
+    float res = std::min((max_p.x - min_p.x)/(m_nx-1), (max_p.y - min_p.y)/(m_ny-1))/2;
+    for(Path path : paths){
+        std::vector<vec2> points = path.get_points(res);
+        int r = path.get_path_size()/res;
+        for(vec2 point : points){
+            std::pair<int, int> coord = get_coordinate(point, m_nx, m_ny);
+            for(int k = -r; k <= r; k++){
+                for(int l = -r; l <= r; l++){
+                    int k_ = k+coord.first;
+                    int l_ = l+coord.second;
+                    if(k*k + l*l <= r*r && k_ >= 0 && k_ < m_nx && l_ >= 0 && l_ < m_ny)
+                        image(k_, l_) = Color(0.8, 0.5, 0.3); 
+                }
+            }
+        }
+    }
     write_image(image, file);
 }
 

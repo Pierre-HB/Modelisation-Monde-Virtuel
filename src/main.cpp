@@ -103,9 +103,9 @@ int main( int argc, char **argv )
     // std::cout << "path length (3->4): ";
     // t_.draw_path(city4, city5, 10*road_size, 3, 4);
     // std::cout << "NETWORK" << std::endl;
-    t_.draw_network_path(cities, 10*road_size, 1.4);
+    t_.draw_network_path(cities, 10, 1.4, 4);
 
-    t_.export_colored_terrain("texture.png", 2);
+    t_.export_colored_terrain("texture.png", 4);
     t_.apply_water();
 
 

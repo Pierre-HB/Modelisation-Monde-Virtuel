@@ -8,6 +8,7 @@
 #include "infinit_texture.h"
 #include "scalar_field.h"
 #include "dijkstra.hpp"
+#include "path.hpp"
 
 struct neighborhood{
     int size;
@@ -27,7 +28,7 @@ class Terrain2D: public ScalarField2D
 {
 private:
     float slope_max;
-    std::vector<bool> path; //grid of the same size as value telling if the node is on a path or not
+    std::vector<Path> paths;
 public:
     Terrain2D(InfinitTexture2D *texture, vec2 min_p, vec2 max_p, int nx, int ny);
     Terrain2D(const char *filename, vec2 min_p, vec2 max_p);

@@ -48,6 +48,14 @@ std::vector<Color> ScalarField2D::get_values_as_color() const{
     return colors;
 } 
 
+std::pair<int, int> ScalarField2D::get_coordinate(vec2 v) const{
+    return std::pair<int, int>((nx-1)*(v.x-min_p.x)/(max_p.x-min_p.x), (ny-1)*(v.y-min_p.y)/(max_p.y-min_p.y));
+}
+
+std::pair<int, int> ScalarField2D::get_coordinate(vec2 v, int nx_, int ny_) const{
+    return std::pair<int, int>((nx_-1)*(v.x-min_p.x)/(max_p.x-min_p.x), (ny_-1)*(v.y-min_p.y)/(max_p.y-min_p.y));
+}
+
 ScalarField2D ScalarField2D::map(float (*function)(float)) const{
     std::vector<float> tmp = std::vector<float>(values.size());
     float max_v = function(values[0]);
