@@ -161,6 +161,21 @@ vec2 Terrain2D::gradient(int i, int j) const{
     return vec2(gradient_x, gradient_y);
 }
 
+bool Terrain2D::is_water(float x, float y) const{
+    return height(x, y) < 0;
+}
+
+void Terrain2D::add_city(vec2 position, int nb_crossroad, float crossroad_radius, float streat_size, int nb_direction){
+
+    City new_city = City(this, position, crossroad_radius, streat_size, nb_direction);
+    for(int _ = 1; _ < nb_crossroad; _++)
+        new_city.add_random_crossroad();        
+
+    cities.push_back(new_city);
+}
+
+
+
 Vector Terrain2D::normal(int i, int j) const{
     vec2 grad = gradient(i, j);
     return normalize(Vector(-grad.x, -grad.y, 1));
@@ -379,14 +394,14 @@ void Terrain2D::export_colored_terrain(const char *file, int scale) const{
                 for(int l = 0; l < scale; l++)
                     if(get_value(i, j) < 0)
                         image(i*scale + k, j*scale + l) = Color(0.15, 0.35, 0.75);
-                    else if(slope(i, j) < 0.5)
+                    else if(slope(i, j) < 0.6)
                         image(i*scale + k, j*scale + l) = Color(0.2, 0.7, 0.2);
                     else
                         image(i*scale + k, j*scale + l) = Color(0.5, 0.5, 0.5);
     
-    float res = std::min((max_p.x - min_p.x)/(m_nx-1), (max_p.y - min_p.y)/(m_ny-1))/2;
+    float res = std::min((max_p.x - min_p.x)/(m_nx-1), (max_p.y - min_p.y)/(m_ny-1));
     for(Path path : paths){
-        std::vector<vec2> points = path.get_points(res);
+        std::vector<vec2> points = path.get_points(res/2);
         int r = path.get_path_size()/res;
         for(vec2 point : points){
             std::pair<int, int> coord = get_coordinate(point, m_nx, m_ny);
@@ -396,6 +411,23 @@ void Terrain2D::export_colored_terrain(const char *file, int scale) const{
                     int l_ = l+coord.second;
                     if(k*k + l*l <= r*r && k_ >= 0 && k_ < m_nx && l_ >= 0 && l_ < m_ny)
                         image(k_, l_) = Color(0.8, 0.5, 0.3); 
+                }
+            }
+        }
+    }
+
+    for(City city : cities){
+        int r = city.get_crossroad_radius()/res;
+        for(vec2 crossroad : city.get_crossroad_centers()){
+            if(is_water(crossroad.x, crossroad.y))
+                std::cout << "CAREFOUR DANS L'EAU" << std::endl;
+            std::pair<int, int> coord = get_coordinate(crossroad, m_nx, m_ny);
+            for(int k = -r; k <= r; k++){
+                for(int l = -r; l <= r; l++){
+                    int k_ = k+coord.first;
+                    int l_ = l+coord.second;
+                    if(k*k + l*l <= r*r && k_ >= 0 && k_ < m_nx && l_ >= 0 && l_ < m_ny)
+                        image(k_, l_) = Color(0.2, 0.2, 0.2); 
                 }
             }
         }

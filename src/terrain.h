@@ -24,11 +24,15 @@ struct heighCell{
     int j;
 };
 
+class City;
+#include "city.hpp"
+
 class Terrain2D: public ScalarField2D
 {
 private:
     float slope_max;
     std::vector<Path> paths;
+    std::vector<City> cities;
 public:
     Terrain2D(InfinitTexture2D *texture, vec2 min_p, vec2 max_p, int nx, int ny);
     Terrain2D(const char *filename, vec2 min_p, vec2 max_p);
@@ -41,6 +45,8 @@ public:
     float height(int i, int j) const;
     //! height at the point (x, y)
     float height(float x, float y) const;
+    //! return if there is water
+    bool is_water(float x, float y) const;
 
     //! return the point at the node (i, j)
     Point point(int i, int j) const;
@@ -74,7 +80,9 @@ public:
     //! Draw a network connecting points. With a hight tolerence road might be longer (there will be lless road in the network)
     void draw_network_path(std::vector<vec2> points, float road_size=1, float tolerence=2, int scale=1, int n=3);
     //! set the water level at -10m
-    void apply_water(float water_level = -10.f);
+    void apply_water(float water_level = 0.f);
+    //! add a city in the location 'position'
+    void add_city(vec2 position, int nb_crossroad, float crossroad_radius=100.f, float streat_size=10.f, int nb_direction=32);
 
     //! return the scalarfield of the slope
     ScalarField2D get_slopes() const;

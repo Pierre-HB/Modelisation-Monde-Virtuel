@@ -19,8 +19,12 @@ std::vector<std::vector<float>> gaussian_kernel(int size, float sigma = 1.0f){
 }
 
 void erosion(Terrain2D& t){
-    for(int _ = 0; _ < 100; _++)
-        t+=0.0001 + (-0.00005)*t.get_drains(0.1).map([](float x){return float(pow(x, 0.5));})*t.get_slopes().map([](float x){return float(pow(x, 0.8));}) + (0.0001)*t.laplacian();
+    //calibrated for a terrain of res 256
+    int borne = 1000;
+    for(int _ = 0; _ < borne; _++){
+        std::cout << "\33[2K\r[" << _ << "/" << borne << "]" << std::flush;
+        t+=0.0001 + (-0.01)*t.get_drains(0.1).map([](float x){return float(pow(x, 0.5));})*t.get_slopes().map([](float x){return float(pow(x, 0.8));}) + (0.5)*t.laplacian();
+    }
 }
 
 void hill(Terrain2D& t){
@@ -72,7 +76,7 @@ int main( int argc, char **argv )
     //     }
     // }
 
-    vec2 city1 = vec2(-1900, -1500);
+    vec2 city1 = vec2(-1950, -1400);
     vec2 city2 = vec2(2250, -1000);
     vec2 city3 = vec2(2000, 1800);
     vec2 city4 = vec2(500, -1000);
@@ -104,6 +108,12 @@ int main( int argc, char **argv )
     // t_.draw_path(city4, city5, 10*road_size, 3, 4);
     // std::cout << "NETWORK" << std::endl;
     t_.draw_network_path(cities, 10, 1.4, 4);
+    t_.add_city(city1, 16, 25);
+    t_.add_city(city2, 16, 25);
+    t_.add_city(city3, 16, 25);
+    t_.add_city(city4, 16, 25);
+    t_.add_city(city5, 16, 25);
+
 
     t_.export_colored_terrain("texture.png", 4);
     t_.apply_water();
