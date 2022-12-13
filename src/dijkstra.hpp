@@ -16,9 +16,9 @@
 
 
 typedef int vertex_t;
-typedef float weight_t;
+typedef double weight_t;
 
-const weight_t max_weight = std::numeric_limits<float>::infinity();
+const weight_t max_weight = std::numeric_limits<double>::infinity();
 
 struct neighbor {
     vertex_t target;

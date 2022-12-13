@@ -5,6 +5,7 @@
 #include <math.h>
 #include <stdlib.h>     /* srand, rand */
 #include <time.h>       /* time */
+#include "path.hpp"
 
 class Terrain2D;
 class City;
@@ -29,16 +30,16 @@ struct crossroad{
     //! constructor
     crossroad(vec2 center, int nb_direction, float radius, City *city): center(center), free_direction(std::vector<bool>(nb_direction, true)), nb_direction(nb_direction), radius(radius), city(city){}
     //!return the center of a crossroad next to this one in the direction 'get_direction(direction, nb_direction)'
-    vec2 get_neighbor_center(int direction);
+    vec2 get_neighbor_center(int direction) const;
     //! initialize the free direction (direction in wich the city can grow)
     bool compute_free_direction();
     //! update free_direction : desable direction that lead to a collision with the new crossroad
     //! return True if there is still some free_direction
     bool update_free_direction(crossroad new_crossroad);
 
-    bool check_integrity();
+    bool check_integrity() const;
     
-    crossroad get_random_neighbor();
+    crossroad get_random_neighbor() const;
 };
 
 class City{
@@ -48,6 +49,7 @@ private:
     std::vector<bool> can_grow_crossroads;
     float crossroad_radius;
     float streat_size;
+    std::vector<Path> paths;
     
 public:
     //! create a city using Elden growth algorithm, starting at center and growing with cells of radius 'crossroas_radius'
@@ -57,13 +59,19 @@ public:
     //! add a random crossroad, return True if the crossroad is created
     bool add_random_crossroad();
     //! return if a crossroad can be created here
-    bool crossroad_space(vec2 p);
+    bool crossroad_space(vec2 p) const;
     //! getter for crossroads
     std::vector<vec2> get_crossroad_centers() const;
     //! getter for crossroad_radius
     float get_crossroad_radius() const {return crossroad_radius;}
     //! getter for streat_size
     float get_streat_size() const {return streat_size;}
+    //! return the two angle of a AABB the city
+    std::pair<vec2, vec2> get_bouding_box() const;
+    //! Compute paths of the city
+    void compute_path(float tolerence=2.f);
+    //! return the paths
+    std::vector<Path> get_paths() const{return paths;}
 
     bool check_integrity();
 

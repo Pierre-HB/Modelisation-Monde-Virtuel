@@ -107,12 +107,14 @@ int main( int argc, char **argv )
     // std::cout << "path length (3->4): ";
     // t_.draw_path(city4, city5, 10*road_size, 3, 4);
     // std::cout << "NETWORK" << std::endl;
-    t_.draw_network_path(cities, 10, 1.4, 4);
-    t_.add_city(city1, 16, 25);
-    t_.add_city(city2, 16, 25);
-    t_.add_city(city3, 16, 25);
-    t_.add_city(city4, 16, 25);
-    t_.add_city(city5, 16, 25);
+    t_.add_paths(t_.get_network_path(cities, 5, 2, 4));
+    t_.add_city(city1, 16, 25, 3);
+    t_.add_city(city2, 16, 25, 3);
+    t_.add_city(city3, 16, 25, 3);
+    t_.add_city(city4, 16, 25, 3);
+    t_.add_city(city5, 16, 25, 3);
+
+    t_.compute_city_paths(10);
 
 
     t_.export_colored_terrain("texture.png", 4);

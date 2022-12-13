@@ -4,7 +4,7 @@
 #include <random>
 
 
-vec2 crossroad::get_neighbor_center(int direction){
+vec2 crossroad::get_neighbor_center(int direction) const{
     vec2 dir = get_direction(direction, nb_direction);
     return center + dir*(2+epsilon)*radius;
 }
@@ -29,7 +29,7 @@ bool crossroad::update_free_direction(crossroad new_crossroad){
     return nb_free_direction != 0;
 }
 
-crossroad crossroad::get_random_neighbor(){
+crossroad crossroad::get_random_neighbor() const{
     int nb_free_direction = 0;
     for(int i = 0; i < nb_direction; i++)
         if(free_direction[i])
@@ -51,7 +51,7 @@ crossroad crossroad::get_random_neighbor(){
     return crossroad();
 }
 
-bool crossroad::check_integrity(){
+bool crossroad::check_integrity() const{
     for(int i = 0; i < nb_direction; i++)
         if(free_direction[i] && !city->crossroad_space(get_neighbor_center(i)))
             return false;
@@ -62,6 +62,7 @@ bool crossroad::check_integrity(){
 City::City(Terrain2D* terrain, vec2 center, float crossroad_radius, float streat_size, int nb_direction): terrain(terrain), crossroad_radius(crossroad_radius), streat_size(streat_size){
     crossroads = std::vector<crossroad>();
     can_grow_crossroads = std::vector<bool>();
+    paths = std::vector<Path>();
 
     
     //no space to create the city
@@ -118,7 +119,7 @@ std::vector<vec2> City::get_crossroad_centers() const {
     return centers;
 }
 
-bool City::crossroad_space(vec2 p){
+bool City::crossroad_space(vec2 p) const{
     std::pair<int, int> coord = terrain->get_coordinate(p);
     if(terrain->slope(coord.first, coord.second) > 0.6){
         return false;
@@ -131,10 +132,36 @@ bool City::crossroad_space(vec2 p){
     for(crossroad node : crossroads)
         if(length(p - node.center) < 2*crossroad_radius)
             return false;
-    return true;
-    
-    
+    return true;   
 }
+
+std::pair<vec2, vec2> City::get_bouding_box() const{
+    std::pair<vec2, vec2> bounds = std::pair<vec2, vec2>(crossroads[0].center, crossroads[0].center);
+    for(crossroad node : crossroads){
+        if(bounds.first.x > node.center.x-crossroad_radius)
+            bounds.first.x = node.center.x-crossroad_radius;
+        if(bounds.first.y > node.center.y-crossroad_radius)
+            bounds.first.y = node.center.y-crossroad_radius;
+        if(bounds.second.x < node.center.x+crossroad_radius)
+            bounds.second.x = node.center.x+crossroad_radius;
+        if(bounds.second.y < node.center.y+crossroad_radius)
+            bounds.second.y = node.center.y+crossroad_radius;
+    }
+    return bounds;
+}
+
+void City::compute_path(float tolerence){
+    std::pair<vec2, vec2> bounds = get_bouding_box();
+    std::pair<int, int> min_angle = terrain->get_coordinate(bounds.first);
+    std::pair<int, int> max_angle = terrain->get_coordinate(bounds.second+terrain->get_resolution());
+    std::vector<Path> m_path = terrain->get_network_path(get_crossroad_centers(), min_angle.first, min_angle.second, max_angle.first+1, max_angle.second+1, streat_size, tolerence);
+    
+    for(Path p : m_path)
+        paths.push_back(p);
+}
+    
+
+
 
 bool City::check_integrity(){
     bool integrity = true;

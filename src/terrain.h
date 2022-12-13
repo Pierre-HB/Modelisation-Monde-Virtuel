@@ -41,6 +41,8 @@ public:
 
     //! compute the neighborhood of a node(cell adjacent) with the distance between the two cell and the coeficent of down-flow with the metric L^p
     neighborhood find_neighborhood(int i, int j, float p = 4) const;
+    //! return the resulotion in x and y
+    vec2 get_resolution() const {return vec2((max_p.x - min_p.x)/(nx-1), (max_p.y - min_p.y)/(ny-1));}
     //! height at the node (i, j)
     float height(int i, int j) const;
     //! height at the point (x, y)
@@ -73,16 +75,26 @@ public:
     bool ray_intersection(Point o, Vector d, Point* intersection = new Point()) const;
     //! return the cost of traveling between two point
     float path_cost(vec2 start, vec2 end) const;
-    //! return the edjey graph using the mask of size 'n' and a map scale of 'scale' (divide nx and ny by 'scale')
+    //! return the edge graph using the mask of size 'n' and a map scale of 'scale' (divide nx and ny by 'scale')
+    adjacency_list_t get_adjacency_list(int n, int scale, int min_x, int min_y, int max_x, int max_y) const;
+    //! return the edge graph using the mask of size 'n' and a map scale of 'scale' (divide nx and ny by 'scale')
     adjacency_list_t get_adjacency_list(int n, int scale) const;
     //! draw the path between start and end on the terrain
     void draw_path(vec2 start, vec2 end, float road_size = 1, int scale=1, int n=3);
     //! Draw a network connecting points. With a hight tolerence road might be longer (there will be lless road in the network)
-    void draw_network_path(std::vector<vec2> points, float road_size=1, float tolerence=2, int scale=1, int n=3);
+    //! min_x and max_x are the bound of the x index to consider for drawing the graph
+    //! min_y and max_y are the bound of the y index to consider for drawing the graph
+    std::vector<Path> get_network_path(std::vector<vec2> points, int min_x, int min_y, int max_x, int max_y, float road_size=1, float tolerence=2, int scale=1, int n=3);
+    //! Draw a network connecting points. With a hight tolerence road might be longer (there will be lless road in the network)
+    std::vector<Path> get_network_path(std::vector<vec2> points, float road_size=1, float tolerence=2, int scale=1, int n=3);
+    //! add a set of path on the terrain
+    void add_paths(const std::vector<Path>& m_paths);
     //! set the water level at -10m
     void apply_water(float water_level = 0.f);
     //! add a city in the location 'position'
     void add_city(vec2 position, int nb_crossroad, float crossroad_radius=100.f, float streat_size=10.f, int nb_direction=32);
+    //! compute paths in every city
+    void compute_city_paths(float tolerence=2.f);
 
     //! return the scalarfield of the slope
     ScalarField2D get_slopes() const;

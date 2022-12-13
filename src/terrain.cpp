@@ -174,6 +174,11 @@ void Terrain2D::add_city(vec2 position, int nb_crossroad, float crossroad_radius
     cities.push_back(new_city);
 }
 
+void Terrain2D::compute_city_paths(float tolerence){
+    for(size_t i = 0; i < cities.size(); i++)
+        cities[i].compute_path(tolerence);
+}
+
 
 
 Vector Terrain2D::normal(int i, int j) const{
@@ -261,13 +266,16 @@ float Terrain2D::path_cost(vec2 start, vec2 end) const{
     float z = height(start.x, start.y) - height(end.x, end.y);
     float x = start.x - end.x;
     float y = start.y - end.y;
+    std::pair<int, int> coord = get_coordinate(start);
+    vec2 grad = gradient(coord.first, coord.second);
     float coef = 1;
-    if(height(end.x, end.y) < 0)
-        coef = 10;
-    return coef*sqrt(x*x + y*y + 10*z*z);
+    if(is_water(end.x, end.y))
+        coef = 20;
+    return coef*(sqrt(x*x + y*y + z*z)+5*abs(x*grad.x + y*grad.y));
+    // return coef*(sqrt(x*x + y*y + 10*z*z)+abs(x*grad.x + y*grad.y));
 }
 
-adjacency_list_t Terrain2D::get_adjacency_list(int n, int scale) const{
+adjacency_list_t Terrain2D::get_adjacency_list(int n, int scale, int min_x, int min_y, int max_x, int max_y) const{
     int m_nx = nx/scale;
     int m_ny = ny/scale;
     adjacency_list_t adjacency_list = std::vector<std::vector<neighbor>>(m_nx*m_ny);
@@ -280,7 +288,7 @@ adjacency_list_t Terrain2D::get_adjacency_list(int n, int scale) const{
                 int i_ = m.first + i;
                 int j_ = m.second + j;
                 Point p_ = point(i_*scale, j_*scale);
-                if(i_ >= 0 && i_ < m_nx && j_ >= 0 && j_ < m_ny){
+                if(i_ >= min_x && i_ < max_x && j_ >= min_y && j_ < max_y){
                     float cost = path_cost(vec2(p.x, p.y), vec2(p_.x, p_.y));
                     adjacency_list[get_index(i, j, m_nx, m_ny)].push_back(neighbor(get_index(i_, j_, m_nx, m_ny), cost));
                 }
@@ -288,6 +296,10 @@ adjacency_list_t Terrain2D::get_adjacency_list(int n, int scale) const{
         }
     }
     return adjacency_list;
+}
+
+adjacency_list_t Terrain2D::get_adjacency_list(int n, int scale) const{
+    return get_adjacency_list(n, scale, 0, 0, nx/scale, ny/scale);
 }
 
 void Terrain2D::draw_path(vec2 start, vec2 end, float road_size, int scale, int n){
@@ -318,8 +330,10 @@ void Terrain2D::draw_path(vec2 start, vec2 end, float road_size, int scale, int 
     paths.push_back(Path(path_points, road_size));
 }
 
-void Terrain2D::draw_network_path(std::vector<vec2> points, float road_size, float tolerence, int scale, int n){
-    adjacency_list_t adj = get_adjacency_list(n, scale);
+std::vector<Path> Terrain2D::get_network_path(std::vector<vec2> points, int min_x, int min_y, int max_x, int max_y, float road_size, float tolerence, int scale, int n){
+    adjacency_list_t adj = get_adjacency_list(n, scale, min_x, min_y, max_x, max_y);
+
+    std::vector<Path> m_paths;
 
     int m_nx = nx/scale;
     int m_ny = ny/scale;
@@ -357,19 +371,35 @@ void Terrain2D::draw_network_path(std::vector<vec2> points, float road_size, flo
     //drawing
     for(size_t i = 0; i < points.size(); i++){
         for(size_t j = 0; j < points.size(); j++){
-            if(!keep_path[i][j] || i > j)
+            if(!keep_path[i][j] || i < j)
                 continue;
             std::list<vertex_t> path = DijkstraGetShortestPathTo(indexes[j], previous[i]);
 
             std::vector<vec2> path_points;
+            
             for(vertex_t v : path){
                 std::pair<int, int> coord = get_coordinate(v, m_nx, m_ny);
                 path_points.push_back(vec2(get_vec(coord.first*scale, coord.second*scale)));
             }
-            paths.push_back(Path(path_points, road_size));
+            // path_points.push_back(points[i]);
+            // path_points.push_back(points[j]);
+            path_points[0] = points[i];
+            path_points[path_points.size()-1] = points[j];
+            m_paths.push_back(Path(path_points, road_size));
         }
     }
+    return m_paths;
 }
+
+std::vector<Path> Terrain2D::get_network_path(std::vector<vec2> points, float road_size, float tolerence, int scale, int n){
+    return get_network_path(points, 0, 0, nx/scale, ny/scale, road_size, tolerence, scale, n);
+}
+
+void Terrain2D::add_paths(const std::vector<Path>& m_paths){
+    for(Path p : m_paths)
+        paths.push_back(p);
+}
+
 
 
 void Terrain2D::apply_water(float water_level){
@@ -417,6 +447,7 @@ void Terrain2D::export_colored_terrain(const char *file, int scale) const{
     }
 
     for(City city : cities){
+        std::cout << "city as " << city.get_paths().size() << " paths." << std::endl;
         int r = city.get_crossroad_radius()/res;
         for(vec2 crossroad : city.get_crossroad_centers()){
             if(is_water(crossroad.x, crossroad.y))
@@ -428,6 +459,24 @@ void Terrain2D::export_colored_terrain(const char *file, int scale) const{
                     int l_ = l+coord.second;
                     if(k*k + l*l <= r*r && k_ >= 0 && k_ < m_nx && l_ >= 0 && l_ < m_ny)
                         image(k_, l_) = Color(0.2, 0.2, 0.2); 
+                }
+            }
+        }
+
+
+        
+        for(Path path : city.get_paths()){
+            std::vector<vec2> points = path.get_points(res/2);
+            int r = path.get_path_size()/res;
+            for(vec2 point : points){
+                std::pair<int, int> coord = get_coordinate(point, m_nx, m_ny);
+                for(int k = -r; k <= r; k++){
+                    for(int l = -r; l <= r; l++){
+                        int k_ = k+coord.first;
+                        int l_ = l+coord.second;
+                        if(k*k + l*l <= r*r && k_ >= 0 && k_ < m_nx && l_ >= 0 && l_ < m_ny)
+                            image(k_, l_) = Color(0.8, 0.5, 0.3); 
+                    }
                 }
             }
         }
