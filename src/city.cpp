@@ -112,6 +112,10 @@ bool City::add_random_crossroad(){
     return nb_can_grow_crossroad != 0;
 }
 
+void City::add_entrence(vec2 v){
+    entrences.push_back(v);
+}
+
 std::vector<vec2> City::get_crossroad_centers() const {
     std::vector<vec2> centers;
     for(crossroad node : crossroads)
@@ -147,6 +151,16 @@ std::pair<vec2, vec2> City::get_bouding_box() const{
         if(bounds.second.y < node.center.y+crossroad_radius)
             bounds.second.y = node.center.y+crossroad_radius;
     }
+    for(vec2 entrence : entrences){
+        if(bounds.first.x > entrence.x)
+            bounds.first.x = entrence.x;
+        if(bounds.first.y > entrence.y)
+            bounds.first.y = entrence.y;
+        if(bounds.second.x < entrence.x)
+            bounds.second.x = entrence.x;
+        if(bounds.second.y < entrence.y)
+            bounds.second.y = entrence.y;
+    }
     return bounds;
 }
 
@@ -154,12 +168,22 @@ void City::compute_path(float tolerence){
     std::pair<vec2, vec2> bounds = get_bouding_box();
     std::pair<int, int> min_angle = terrain->get_coordinate(bounds.first);
     std::pair<int, int> max_angle = terrain->get_coordinate(bounds.second+terrain->get_resolution());
-    std::vector<Path> m_path = terrain->get_network_path(get_crossroad_centers(), min_angle.first, min_angle.second, max_angle.first+1, max_angle.second+1, streat_size, tolerence);
+    std::vector<vec2> points = get_crossroad_centers();
+    for(vec2 v : entrences)
+        points.push_back(v);
+    std::vector<Path> m_path = terrain->get_network_path(points, min_angle.first, min_angle.second, max_angle.first+1, max_angle.second+1, streat_size, tolerence);
     
     for(Path p : m_path)
         paths.push_back(p);
 }
     
+bool City::in_city(const vec2& v) const{
+    for(crossroad node : crossroads)
+        if(length(v-node.center) < node.radius)
+            return true;
+    return false;
+}
+
 
 
 

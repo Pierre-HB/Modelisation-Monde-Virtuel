@@ -179,6 +179,36 @@ void Terrain2D::compute_city_paths(float tolerence){
         cities[i].compute_path(tolerence);
 }
 
+void Terrain2D::connect_cities(){
+    for(size_t i = 0; i < paths.size(); i++){
+        for(size_t j = 0; j < cities.size(); j++){
+            std::vector<vec2> points = paths[i].get_points();
+            if(cities[j].in_city(points[points.size()-1])){
+                int last_point_in_city_id = points.size()-1;
+                for(size_t k = points.size()-1; k < points.size(); k--)
+                    if(cities[j].in_city(points[k]))
+                        last_point_in_city_id = k;
+
+                cities[j].add_entrence(points[last_point_in_city_id]);
+                paths[i].cut_after(last_point_in_city_id);
+                //TODO cut path at id last_point_in_city_id
+            }
+            points = paths[i].get_points();
+            if(cities[j].in_city(points[0])){
+                int last_point_in_city_id = 0;
+                for(size_t k = 0; k < points.size(); k++)
+                    if(cities[j].in_city(points[k]))
+                        last_point_in_city_id = k;
+                
+                cities[j].add_entrence(points[last_point_in_city_id]);
+                paths[i].cut_before(last_point_in_city_id);
+                //TODO cut path at id last_point_in_city_id
+            }
+        } 
+    }
+}
+
+
 
 
 Vector Terrain2D::normal(int i, int j) const{
@@ -371,8 +401,9 @@ std::vector<Path> Terrain2D::get_network_path(std::vector<vec2> points, int min_
     //drawing
     for(size_t i = 0; i < points.size(); i++){
         for(size_t j = 0; j < points.size(); j++){
-            if(!keep_path[i][j] || i < j)
+            if(!keep_path[i][j] || i <= j)
                 continue;
+            std::cout << "keep path " << i << "(" << points[i].x << ", " << points[i].y << ")" << "->" << j << "(" << points[j].x << ", " << points[j].y << ")" << " of length : " << network_distances[i][j] << std::endl;
             std::list<vertex_t> path = DijkstraGetShortestPathTo(indexes[j], previous[i]);
 
             std::vector<vec2> path_points;
@@ -398,6 +429,11 @@ std::vector<Path> Terrain2D::get_network_path(std::vector<vec2> points, float ro
 void Terrain2D::add_paths(const std::vector<Path>& m_paths){
     for(Path p : m_paths)
         paths.push_back(p);
+}
+
+void Terrain2D::refine(float precision){
+    for(size_t i = 0; i < paths.size(); i++)
+        paths[i].refine(precision);
 }
 
 
@@ -430,23 +466,20 @@ void Terrain2D::export_colored_terrain(const char *file, int scale) const{
                         image(i*scale + k, j*scale + l) = Color(0.5, 0.5, 0.5);
     
     float res = std::min((max_p.x - min_p.x)/(m_nx-1), (max_p.y - min_p.y)/(m_ny-1));
-    for(Path path : paths){
-        std::vector<vec2> points = path.get_points(res/2);
-        int r = path.get_path_size()/res;
-        for(vec2 point : points){
-            std::pair<int, int> coord = get_coordinate(point, m_nx, m_ny);
-            for(int k = -r; k <= r; k++){
-                for(int l = -r; l <= r; l++){
-                    int k_ = k+coord.first;
-                    int l_ = l+coord.second;
-                    if(k*k + l*l <= r*r && k_ >= 0 && k_ < m_nx && l_ >= 0 && l_ < m_ny)
-                        image(k_, l_) = Color(0.8, 0.5, 0.3); 
-                }
-            }
-        }
-    }
+    
+    std::vector<Color> colors;
+    colors.push_back(Color(0, 0, 0));
+    colors.push_back(Color(0, 0, 1));
+    colors.push_back(Color(0, 1, 0));
+    colors.push_back(Color(0, 1, 1));
+    colors.push_back(Color(1, 0, 0));
+    colors.push_back(Color(1, 0, 1));
+    colors.push_back(Color(1, 1, 0));
+    colors.push_back(Color(1, 1, 1));
 
-    for(City city : cities){
+    // for(City city : cities){
+    for(size_t i = 0; i < cities.size(); i++){
+        City city = cities[i];
         std::cout << "city as " << city.get_paths().size() << " paths." << std::endl;
         int r = city.get_crossroad_radius()/res;
         for(vec2 crossroad : city.get_crossroad_centers()){
@@ -458,7 +491,8 @@ void Terrain2D::export_colored_terrain(const char *file, int scale) const{
                     int k_ = k+coord.first;
                     int l_ = l+coord.second;
                     if(k*k + l*l <= r*r && k_ >= 0 && k_ < m_nx && l_ >= 0 && l_ < m_ny)
-                        image(k_, l_) = Color(0.2, 0.2, 0.2); 
+                        image(k_, l_) = colors[i%8]; 
+                        // image(k_, l_) = Color(0.4, 0.4, 0.4); 
                 }
             }
         }
@@ -475,8 +509,24 @@ void Terrain2D::export_colored_terrain(const char *file, int scale) const{
                         int k_ = k+coord.first;
                         int l_ = l+coord.second;
                         if(k*k + l*l <= r*r && k_ >= 0 && k_ < m_nx && l_ >= 0 && l_ < m_ny)
-                            image(k_, l_) = Color(0.8, 0.5, 0.3); 
+                            image(k_, l_) = Color(0.2, 0.2, 0.2); 
                     }
+                }
+            }
+        }
+    }
+    for(Path path : paths){
+        std::cout << "resolution : " << res/2 << std::endl;
+        std::vector<vec2> points = path.get_points(res/2);
+        int r = path.get_path_size()/res;
+        for(vec2 point : points){
+            std::pair<int, int> coord = get_coordinate(point, m_nx, m_ny);
+            for(int k = -r; k <= r; k++){
+                for(int l = -r; l <= r; l++){
+                    int k_ = k+coord.first;
+                    int l_ = l+coord.second;
+                    if(k*k + l*l <= r*r && k_ >= 0 && k_ < m_nx && l_ >= 0 && l_ < m_ny)
+                        image(k_, l_) = Color(0.8, 0.5, 0.3); 
                 }
             }
         }

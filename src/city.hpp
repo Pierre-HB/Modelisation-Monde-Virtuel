@@ -50,6 +50,7 @@ private:
     float crossroad_radius;
     float streat_size;
     std::vector<Path> paths;
+    std::vector<vec2> entrences;
     
 public:
     //! create a city using Elden growth algorithm, starting at center and growing with cells of radius 'crossroas_radius'
@@ -58,6 +59,8 @@ public:
     City(Terrain2D* terrain, vec2 center, float crossroad_radius, float streat_size, int nb_direction=32);
     //! add a random crossroad, return True if the crossroad is created
     bool add_random_crossroad();
+    //! add an entrence to the city
+    void add_entrence(vec2 v);
     //! return if a crossroad can be created here
     bool crossroad_space(vec2 p) const;
     //! getter for crossroads
@@ -72,6 +75,8 @@ public:
     void compute_path(float tolerence=2.f);
     //! return the paths
     std::vector<Path> get_paths() const{return paths;}
+    //! return if a point is in any crossroad of the city
+    bool in_city(const vec2& v) const;
 
     bool check_integrity();
 

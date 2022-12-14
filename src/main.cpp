@@ -108,11 +108,14 @@ int main( int argc, char **argv )
     // t_.draw_path(city4, city5, 10*road_size, 3, 4);
     // std::cout << "NETWORK" << std::endl;
     t_.add_paths(t_.get_network_path(cities, 5, 2, 4));
+    t_.refine(1);
     t_.add_city(city1, 16, 25, 3);
     t_.add_city(city2, 16, 25, 3);
     t_.add_city(city3, 16, 25, 3);
     t_.add_city(city4, 16, 25, 3);
     t_.add_city(city5, 16, 25, 3);
+
+    t_.connect_cities();
 
     t_.compute_city_paths(10);
 

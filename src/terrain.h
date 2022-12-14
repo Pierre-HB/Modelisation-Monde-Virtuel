@@ -87,6 +87,8 @@ public:
     std::vector<Path> get_network_path(std::vector<vec2> points, int min_x, int min_y, int max_x, int max_y, float road_size=1, float tolerence=2, int scale=1, int n=3);
     //! Draw a network connecting points. With a hight tolerence road might be longer (there will be lless road in the network)
     std::vector<Path> get_network_path(std::vector<vec2> points, float road_size=1, float tolerence=2, int scale=1, int n=3);
+    //! refine the path of the terrain to have a certain precision
+    void refine(float precision);
     //! add a set of path on the terrain
     void add_paths(const std::vector<Path>& m_paths);
     //! set the water level at -10m
@@ -95,6 +97,8 @@ public:
     void add_city(vec2 position, int nb_crossroad, float crossroad_radius=100.f, float streat_size=10.f, int nb_direction=32);
     //! compute paths in every city
     void compute_city_paths(float tolerence=2.f);
+    //! conect cities with the paths linking them
+    void connect_cities();
 
     //! return the scalarfield of the slope
     ScalarField2D get_slopes() const;
