@@ -109,7 +109,7 @@ void draw( Mesh& m, DrawParam& param )
 }
 
 
-GLuint DrawParam::create_program( const GLenum primitives, const bool use_texcoord, const bool use_normal, const bool use_color, const bool use_light, const bool use_alpha_test )
+GLuint DrawParam::create_program( const GLenum primitives, const bool use_texcoord, const bool use_normal, const bool use_color, const bool use_light, const bool use_alpha_test, const bool use_instances )
 {
     std::string definitions;
 
@@ -123,6 +123,8 @@ GLuint DrawParam::create_program( const GLenum primitives, const bool use_texcoo
         definitions.append("#define USE_LIGHT\n");
     if(use_texcoord && use_alpha_test)
         definitions.append("#define USE_ALPHATEST\n");
+    if(use_instances)
+        definitions.append("#define USE_INSTANCES\n");
 
     //~ printf("--\n%s", definitions.c_str());
     const char *filename= smart_path("src/gKit/shaders/mesh.glsl");
@@ -159,6 +161,7 @@ void DrawParam::draw( Mesh& mesh )
     bool use_texcoord= m_use_texture && m_texture > 0 && mesh.has_texcoord();
     bool use_normal= mesh.has_normal();
     bool use_color= mesh.has_color();
+    bool use_instances = mesh.has_instances();
 
     Transform mv= m_view * m_model;
     Transform mvp= m_projection * mv;
@@ -173,17 +176,18 @@ void DrawParam::draw( Mesh& mesh )
         use_color= false;
         use_normal= false;
         use_texcoord= true;
+        use_instances = false;
         
         glUseProgram(program);
         //~ program_use_texture(program, "diffuse_color", 0, m_debug_texture);
         program_uniform(program, "mvpMatrix", mvp);
         program_uniform(program, "mvMatrix", mv);
         
-        mesh.draw(program,  /* position */ true, use_texcoord, false, false, /* material_index */ false);
+        mesh.draw(program,  /* position */ true, use_texcoord, false, false, /* material_index */ false, /* instances */false);
         return;
     }
     
-    program= create_program(mesh.primitives(), use_texcoord, use_normal, use_color, m_use_light, m_use_alpha_test);
+    program= create_program(mesh.primitives(), use_texcoord, use_normal, use_color, m_use_light, m_use_alpha_test, use_instances);
     
     glUseProgram(program);
     if(!use_color)
@@ -209,7 +213,7 @@ void DrawParam::draw( Mesh& mesh )
     if(m_use_alpha_test)
         program_uniform(program, "alpha_min", m_alpha_min);
     
-    mesh.draw(program, /* position */ true, use_texcoord, use_normal, use_color, /* material_index */ false);
+    mesh.draw(program, /* position */ true, use_texcoord, use_normal, use_color, /* material_index */ false, /* instances */false);
     
     // dessine les normales par dessus...
     if(m_debug_normals)
@@ -235,7 +239,7 @@ void DrawParam::draw( Mesh& mesh )
         program_uniform(program, "normalMatrix", mv.normal()); // transforme les normales dans le repere camera.
         program_uniform(program, "scale", scale * m_normals_scale);
 
-        mesh.draw(program, /* position */ true, false, use_normal, false, /* material_index */ false);
+        mesh.draw(program, /* position */ true, false, use_normal, false, /* material_index */ false, /* instances */false);
     }
 }
 
@@ -244,9 +248,10 @@ void DrawParam::draw( const TriangleGroup& group, Mesh& mesh )
     bool use_texcoord= m_use_texture && m_texture > 0 && mesh.has_texcoord();
     bool use_normal= mesh.has_normal();
     bool use_color= mesh.has_color();
+    bool use_instances = mesh.has_instances();
     
     // etape 1 : construit le program en fonction des attributs du mesh et des options choisies
-    GLuint program= create_program(mesh.primitives(), use_texcoord, use_normal, use_color, m_use_light, m_use_alpha_test);
+    GLuint program= create_program(mesh.primitives(), use_texcoord, use_normal, use_color, m_use_light, m_use_alpha_test, use_instances);
     
     glUseProgram(program);
     if(group.index != -1 && group.index < mesh.materials().count())
@@ -277,5 +282,5 @@ void DrawParam::draw( const TriangleGroup& group, Mesh& mesh )
     if(m_use_alpha_test)
         program_uniform(program, "alpha_min", m_alpha_min);
     
-    mesh.draw(group.first, group.n, program, /* position */ true, use_texcoord, use_normal, use_color, /* material_index */ false);
+    mesh.draw(group.first, group.n, program, /* position */ true, use_texcoord, use_normal, use_color, /* material_index */ false, use_instances);
 }

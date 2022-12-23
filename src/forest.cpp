@@ -119,15 +119,19 @@ std::vector<Tree> Forest::get_trees(const Terrain2D *terrain) const{
                 //compute proba:
 
                 //...
-                proba[fir] = terrain->height(point.x, point.y)/500;
-                if(slopes.get_value(point) > 0.5)
-                    proba[fir]/= 1+10*slopes.get_value(point);
+                proba[fir] = (terrain->height(point.x, point.y)-150)/150;
+
+                float threshold = 1;
+                float coef = 2;
+                if(slopes.get_value(point) > threshold)
+                    proba[fir]/= 1+coef*slopes.get_value(point);
                 else{
-                    proba[fir]/= 1+10*(2*slopes.get_value(point))*slopes.get_value(point);
+                    proba[fir]/= 1+coef*(slopes.get_value(point)/threshold)*slopes.get_value(point);
                 }
 
                 if(proba[fir] < 0)
                     proba[fir] = 0;
+                    
                 if(proba[fir] > 1)
                     proba[fir] = 1;
 

@@ -155,6 +155,9 @@ public:
     //! insere un sommet de position p, et ses attributs (s'ils sont definis par color(), texcoord(), normal()), dans l'objet. renvoie l'indice du sommet.
     unsigned int vertex( const float x, const float y, const float z ) { return vertex(vec3(x, y, z)); }
     
+    //! insere une nouvelle instance
+    unsigned int instance( const Transform& t );
+
     //! vide la description.
     void clear( );
     //@}
@@ -318,6 +321,7 @@ public:
     bool has_normal( ) const { return m_normals.size() == m_positions.size(); }
     bool has_color( ) const { return m_colors.size() == m_positions.size(); }
     bool has_material_index( ) const { return int(m_triangle_materials.size()) == triangle_count(); }
+    bool has_instances( ) const { return m_instances.size() > 0; }
     //@}
     
     //! renvoie le type de primitives.
@@ -347,21 +351,23 @@ public:
     
     
     //! construit les buffers et le vertex array object necessaires pour dessiner l'objet avec openGL. utilitaire. detruit par release( ).
-    GLuint create_buffers( const bool use_texcoord, const bool use_normal, const bool use_color, const bool use_material_index );
+    GLuint create_buffers( const bool use_texcoord, const bool use_normal, const bool use_color, const bool use_material_index, const bool use_instances );
     //! dessine l'objet avec un shader program. 
-    void draw( const GLuint program, const bool use_position, const bool use_texcoord, const bool use_normal, const bool use_color, const bool use_material_index );
+    void draw( const GLuint program, const bool use_position, const bool use_texcoord, const bool use_normal, const bool use_color, const bool use_material_index, const bool use_instances );
     //! dessine une partie de l'objet avec un shader program.
-    void draw( const int first, const int n, const GLuint program, const bool use_position, const bool use_texcoord, const bool use_normal, const bool use_color, const bool use_material_index );
+    void draw( const int first, const int n, const GLuint program, const bool use_position, const bool use_texcoord, const bool use_normal, const bool use_color, const bool use_material_index, const bool use_instances );
     
 private:
     //! modifie les buffers openGL, si necessaire.
-    int update_buffers( const bool use_texcoord, const bool use_normal, const bool use_color, const bool use_material_index );
+    int update_buffers( const bool use_texcoord, const bool use_normal, const bool use_color, const bool use_material_index, const bool use_instance );
     
     //
     std::vector<vec3> m_positions;
     std::vector<vec2> m_texcoords;
     std::vector<vec3> m_normals;
     std::vector<vec4> m_colors;
+
+    std::vector<Transform> m_instances;
     
     std::vector<unsigned int> m_indices;
 

@@ -97,7 +97,7 @@ public:
 // a virer     
     //! utilise une source de lumire pour eclairer l'objet, ou pas si use_light= false.
     DrawParam& lighting( const bool use_light= true ) { m_use_light= use_light;  return *this; }
-    //! renvoie la position de la lumière.
+    //! renvoie la position de la lumiï¿½re.
     const Point& light() const { return m_light; }
 // les params sont configures une fois par groupe d'options, pas a chaque draw. l'idee est de dessiner tous les objets utilisant la meme config ensemble / en suivant, les uns apres les autres.
     
@@ -118,7 +118,7 @@ protected:
     \param use_light force l'utilisation d'un source de lumiere 
     \param use_alpha_test force l'utilisation d'un test de transparence, cf utilisation d'une texture avec un canal alpha
      */
-    GLuint create_program( const GLenum primitives, const bool use_texcoord, const bool use_normal, const bool use_color, const bool use_light, const bool use_alpha_test );
+    GLuint create_program( const GLenum primitives, const bool use_texcoord, const bool use_normal, const bool use_color, const bool use_light, const bool use_alpha_test, const bool use_instances );
     GLuint create_debug_normals_program( const GLenum primitives, const bool use_texcoord, const bool use_normal, const bool use_color, const bool use_light, const bool use_alpha_test );
     GLuint create_debug_texcoords_program( const GLenum primitives, const bool use_texcoord, const bool use_normal, const bool use_color, const bool use_light, const bool use_alpha_test );
     
