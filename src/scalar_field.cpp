@@ -25,6 +25,42 @@ ScalarField2D ScalarField2D::update_min_max(){
     }
     return *this;
 }
+
+float ScalarField2D::get_value(vec2 p) const{
+    float i = (nx-1)*(p.x-min_p.x)/(max_p.x-min_p.x);
+    float j = (ny-1)*(p.y-min_p.y)/(max_p.y-min_p.y);
+    if(i < 0)
+        i = 0;
+    if(i > nx-1)
+        i = nx-1;
+    if(j < 0)
+        j = 0;
+    if(j > ny-1)
+        j = ny-1;
+    
+    
+    int i_0 = floor(i);
+    float s_i = i - i_0;
+    int j_0 = floor(j);
+    float s_j = j - j_0;
+
+
+    //top and right border case
+    if(s_i == 0 && s_j == 0)
+        return get_value(i_0, j_0);
+    if(s_i == 0)
+        return get_value(i_0, j_0)*(1-s_j)
+             + get_value(i_0, j_0+1)*s_j;
+    if(s_j == 0)
+        return get_value(i_0, j_0)*(1-s_i)
+             + get_value(i_0+1, j_0)*s_i;
+
+    return get_value(i_0, j_0)*(1-s_i)*(1-s_j)
+         + get_value(i_0, j_0+1)*(1-s_i)*s_j
+         + get_value(i_0+1, j_0)*s_i*(1-s_j)
+         + get_value(i_0+1, j_0+1)*s_i*s_j;
+}
+
 void ScalarField2D::export_as_image(const char *file, bool normalisation) const{
     Image image(nx, ny, Color(0));
 

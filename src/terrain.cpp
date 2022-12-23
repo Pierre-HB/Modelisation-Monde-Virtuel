@@ -8,7 +8,7 @@
 
 
 
-Terrain2D::Terrain2D(InfinitTexture2D *texture, vec2 min_p, vec2 max_p, int nx, int ny){
+Terrain2D::Terrain2D(InfinitTexture2D *texture, vec2 min_p, vec2 max_p, int nx, int ny, float tree_radius){
     this->nx = nx;
     this->ny = ny;
     this->min_p = Point(min_p.x, min_p.y, 0);
@@ -27,18 +27,21 @@ Terrain2D::Terrain2D(InfinitTexture2D *texture, vec2 min_p, vec2 max_p, int nx, 
         }
     }
     slope_max = max_slope();
+
+    forest = Forest(tree_radius, (max_p-min_p)/10);
 }
 
-Terrain2D::Terrain2D(const ScalarField2D& sf){
+Terrain2D::Terrain2D(const ScalarField2D& sf, float tree_radius){
     values = sf.get_values();    
     nx = sf.get_nx();
     ny = sf.get_ny();
     min_p = sf.get_min_p();
     max_p = sf.get_max_p();
     slope_max = max_slope();
+    forest = Forest(tree_radius, vec2(max_p.x-min_p.x, max_p.y-min_p.y)/10);
 }
 
-Terrain2D::Terrain2D(const char *filename, vec2 min_p, vec2 max_p){
+Terrain2D::Terrain2D(const char *filename, vec2 min_p, vec2 max_p, float tree_radius){
     Image image = read_image(filename);
     this->nx = image.width();
     this->ny = image.height();
@@ -57,6 +60,8 @@ Terrain2D::Terrain2D(const char *filename, vec2 min_p, vec2 max_p){
         }
     }
     slope_max = max_slope();
+
+    forest = Forest(tree_radius, (max_p-min_p)/10);
 }
 
 
@@ -96,40 +101,44 @@ neighborhood Terrain2D::find_neighborhood(int i, int j, float p) const{
 float Terrain2D::height(int i, int j) const{
     return get_value(i, j);
 }
+
 float Terrain2D::height(float x, float y) const{
-    float i = (nx-1)*(x-min_p.x)/(max_p.x-min_p.x);
-    float j = (ny-1)*(y-min_p.y)/(max_p.y-min_p.y);
-    if(i < 0)
-        i = 0;
-    if(i > nx-1)
-        i = nx-1;
-    if(j < 0)
-        j = 0;
-    if(j > ny-1)
-        j = ny-1;
-    
-    
-    int i_0 = floor(i);
-    float s_i = i - i_0;
-    int j_0 = floor(j);
-    float s_j = j - j_0;
-
-
-    //top and right border case
-    if(s_i == 0 && s_j == 0)
-        return get_value(i_0, j_0);
-    if(s_i == 0)
-        return get_value(i_0, j_0)*(1-s_j)
-             + get_value(i_0, j_0+1)*s_j;
-    if(s_j == 0)
-        return get_value(i_0, j_0)*(1-s_i)
-             + get_value(i_0+1, j_0)*s_i;
-
-    return get_value(i_0, j_0)*(1-s_i)*(1-s_j)
-         + get_value(i_0, j_0+1)*(1-s_i)*s_j
-         + get_value(i_0+1, j_0)*s_i*(1-s_j)
-         + get_value(i_0+1, j_0+1)*s_i*s_j;
+    return get_value(vec2(x, y));
 }
+// float Terrain2D::height(float x, float y) const{
+//     float i = (nx-1)*(x-min_p.x)/(max_p.x-min_p.x);
+//     float j = (ny-1)*(y-min_p.y)/(max_p.y-min_p.y);
+//     if(i < 0)
+//         i = 0;
+//     if(i > nx-1)
+//         i = nx-1;
+//     if(j < 0)
+//         j = 0;
+//     if(j > ny-1)
+//         j = ny-1;
+    
+    
+//     int i_0 = floor(i);
+//     float s_i = i - i_0;
+//     int j_0 = floor(j);
+//     float s_j = j - j_0;
+
+
+//     //top and right border case
+//     if(s_i == 0 && s_j == 0)
+//         return get_value(i_0, j_0);
+//     if(s_i == 0)
+//         return get_value(i_0, j_0)*(1-s_j)
+//              + get_value(i_0, j_0+1)*s_j;
+//     if(s_j == 0)
+//         return get_value(i_0, j_0)*(1-s_i)
+//              + get_value(i_0+1, j_0)*s_i;
+
+//     return get_value(i_0, j_0)*(1-s_i)*(1-s_j)
+//          + get_value(i_0, j_0+1)*(1-s_i)*s_j
+//          + get_value(i_0+1, j_0)*s_i*(1-s_j)
+//          + get_value(i_0+1, j_0+1)*s_i*s_j;
+// }
 
 Point Terrain2D::point(int i, int j) const{
     vec2 v = get_vec(i, j);
@@ -403,7 +412,7 @@ std::vector<Path> Terrain2D::get_network_path(std::vector<vec2> points, int min_
         for(size_t j = 0; j < points.size(); j++){
             if(!keep_path[i][j] || i <= j)
                 continue;
-            std::cout << "keep path " << i << "(" << points[i].x << ", " << points[i].y << ")" << "->" << j << "(" << points[j].x << ", " << points[j].y << ")" << " of length : " << network_distances[i][j] << std::endl;
+            // std::cout << "keep path " << i << "(" << points[i].x << ", " << points[i].y << ")" << "->" << j << "(" << points[j].x << ", " << points[j].y << ")" << " of length : " << network_distances[i][j] << std::endl;
             std::list<vertex_t> path = DijkstraGetShortestPathTo(indexes[j], previous[i]);
 
             std::vector<vec2> path_points;
@@ -530,6 +539,19 @@ void Terrain2D::export_colored_terrain(const char *file, int scale) const{
                 }
             }
         }
+    }
+
+    for(Tree tree : forest.get_trees(this)){
+        int r = tree.radius/res;
+        std::pair<int, int> coord = get_coordinate(tree.position, m_nx, m_ny);
+            for(int k = -r; k <= r; k++){
+                for(int l = -r; l <= r; l++){
+                    int k_ = k+coord.first;
+                    int l_ = l+coord.second;
+                    if(k*k + l*l <= r*r && k_ >= 0 && k_ < m_nx && l_ >= 0 && l_ < m_ny)
+                        image(k_, l_) = Color(0.1, 0.5, 0.1); 
+                }
+            }
     }
     write_image(image, file);
 }

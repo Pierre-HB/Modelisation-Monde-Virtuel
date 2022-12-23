@@ -126,7 +126,7 @@ int main( int argc, char **argv )
 
     
 
-
+    std::cout << "p_min : " << t_.get_min_p() << ", p_max : " << t_.get_max_p() << std::endl;
     (t_.derivate_x() + t_.derivate_y()).export_as_image("derivate.png");
     t_.get_slopes().export_as_image("slope.png");
     t_.get_drains().map([](float x){return sqrt(x);}).export_as_image("drain.png");
@@ -135,8 +135,11 @@ int main( int argc, char **argv )
     t_.export_as_image("height.png");
     if(false)t_.get_occlusions(256).export_as_image("occlusion.png", false);
 
+
+    std::vector<Transform> transforms = std::vector<Transform>();
+    transforms.push_back(Scale(100, 100, 100)*RotationX(90));
     const char* texture_file = "texture.png";
-    SimpleApp simple_app = SimpleApp(1024, 640, t_.get_positions(), t_.get_normals(), t_.get_texcoords(), texture_file, t_.get_indexes());
+    SimpleApp simple_app = SimpleApp(1024, 640, t_.get_positions(), t_.get_normals(), t_.get_texcoords(), texture_file, t_.get_indexes(), transforms);
     // SimpleApp simple_app = SimpleApp(1024, 640, t_.get_positions(), t_.get_normals(), t_.get_indexes());
     
     // SimpleApp simple_app = SimpleApp(1024, 640, t.get_positions(), t.get_normals(),t.get_slopes().get_values_as_color(), t.get_indexes());

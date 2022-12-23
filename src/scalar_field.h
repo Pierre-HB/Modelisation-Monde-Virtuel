@@ -42,6 +42,8 @@ public:
     ScalarField2D update_min_max();
     //! get the value at node (i, j)
     float get_value(int i, int j) const;
+    //! get the value at postion p
+    float get_value(vec2 p) const;
     //! set the value at node (i, j)
     void set_value(int i, int j, float v);
     //! return the index in the values vector of the node (i, j)

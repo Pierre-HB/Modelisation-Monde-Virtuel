@@ -10,6 +10,7 @@
 int SimpleApp::init( )
 {
     // m_objet= read_mesh("data/cube.obj");
+    oak = read_mesh("data/oak.obj");
     m_objet = Mesh(GL_TRIANGLES);
     if(use_texture)
         m_texture = read_texture(0, texture_file);
@@ -33,6 +34,7 @@ int SimpleApp::init( )
     Point pmin, pmax;
     m_objet.bounds(pmin, pmax);
     m_camera.lookat(pmin, pmax);
+    m_camera.read_orbiter("camera");
     
     
     // etat openGL par defaut
@@ -68,6 +70,19 @@ int SimpleApp::render( )
     else if(mb & SDL_BUTTON(2))         // le bouton du milieu est enfonce
         m_camera.translation((float) mx / (float) window_width(), (float) my / (float) window_height());
     
+    if(key_state('s'))
+    {
+        // sauvegarde la camera
+        m_camera.write_orbiter("camera");
+    }
+    if(key_state('l'))
+    {
+        // charge la camera
+        m_camera.read_orbiter("camera");
+    }
+    // int write_orbiter( const char *filename )
+
+
     // affiche l'objet pour le point de vue de la camera et avec une texture
     const bool debug_normal = false;
     if(debug_normal){
@@ -86,6 +101,10 @@ int SimpleApp::render( )
         else
             draw(m_objet, m_camera);
     }
+
+    for(TriangleGroup tg : oak.groups())
+        for(Transform model : oaks)
+            draw(tg, oak, model, m_camera);
     
 
     

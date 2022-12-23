@@ -11,6 +11,10 @@ There are several configuration for the makefile:
  * `make config=release64` (comile using maximum acceleration)
  * `make config=release32` (not working)
 
+## Report
+
+ * Parler du calcul des prob pour les arbres!
+
 ## Bug report
  * Nothing
 

@@ -9,6 +9,7 @@
 #include "scalar_field.h"
 #include "dijkstra.hpp"
 #include "path.hpp"
+#include "forest.hpp"
 
 struct neighborhood{
     int size;
@@ -33,10 +34,11 @@ private:
     float slope_max;
     std::vector<Path> paths;
     std::vector<City> cities;
+    Forest forest;
 public:
-    Terrain2D(InfinitTexture2D *texture, vec2 min_p, vec2 max_p, int nx, int ny);
-    Terrain2D(const char *filename, vec2 min_p, vec2 max_p);
-    Terrain2D(const ScalarField2D& sf);
+    Terrain2D(InfinitTexture2D *texture, vec2 min_p, vec2 max_p, int nx, int ny, float tree_radius=5);
+    Terrain2D(const char *filename, vec2 min_p, vec2 max_p, float tree_radius=5);
+    Terrain2D(const ScalarField2D& sf, float tree_radius=5);
     ~Terrain2D(){};
 
     //! compute the neighborhood of a node(cell adjacent) with the distance between the two cell and the coeficent of down-flow with the metric L^p
