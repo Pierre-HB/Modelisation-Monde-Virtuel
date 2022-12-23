@@ -120,7 +120,7 @@ int main( int argc, char **argv )
     t_.compute_city_paths(10);
 
     float tree_radius = 5;
-    Forest forest = Forest(tree_radius, vec2(5000, 5000)/10);
+    Forest forest = Forest(tree_radius, vec2(5000, 5000)/10, 10000, 8);
     t_.comput_trees(forest);
 
 
@@ -148,6 +148,9 @@ int main( int argc, char **argv )
         oaks[i] = oaks[i]*RotationX(90);
     for(size_t i = 0; i < firs.size(); i++)
         firs[i] = firs[i]*RotationX(90);
+    
+    std::cout << "oaks : " << oaks.size() << std::endl;
+    std::cout << "firs : " << firs.size() << std::endl;
 
     const char* texture_file = "texture.png";
     SimpleApp simple_app = SimpleApp(1024, 640, t_.get_positions(), t_.get_normals(), t_.get_texcoords(), texture_file, t_.get_indexes(), oaks, firs);

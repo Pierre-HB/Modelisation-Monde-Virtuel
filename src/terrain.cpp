@@ -220,13 +220,19 @@ void Terrain2D::comput_trees(const Forest &forest){
 std::vector<Transform> Terrain2D::get_tree_transform(TreeType type) const{
     std::vector<Transform> tree_transforms = std::vector<Transform>();
     std::uniform_real_distribution<float> u(0.0, 360);
+    std::uniform_real_distribution<float> u01(0.0, 1.0);
     std::default_random_engine rng(42);
     for(Tree tree : trees)
-        if(tree.type == type)
+        if(tree.type == type){
+            float size = sqrt(sqrt(u01(rng)*tree.proba));
+            if(size < 0.1)
+                size = 0.1;
             tree_transforms.push_back(
                 Translation(Vector(tree.position.x, tree.position.y, height(tree.position.x, tree.position.y)))
-                *Scale(tree.radius, tree.radius, tree.radius)
+                *Scale(tree.radius*size, tree.radius*size, tree.radius*size)
                 *RotationZ(u(rng)));
+        }
+            
     return tree_transforms;
 }
 
@@ -556,9 +562,11 @@ void Terrain2D::export_colored_terrain(const char *file, int scale) const{
         }
     }
 
-    for(Tree tree : trees){
-        int r = tree.radius/res;
-        std::pair<int, int> coord = get_coordinate(tree.position, m_nx, m_ny);
+    const bool draw_trees = false;
+    if(draw_trees){
+        for(Tree tree : trees){
+            int r = tree.radius/res;
+            std::pair<int, int> coord = get_coordinate(tree.position, m_nx, m_ny);
             for(int k = -r; k <= r; k++){
                 for(int l = -r; l <= r; l++){
                     int k_ = k+coord.first;
@@ -567,7 +575,9 @@ void Terrain2D::export_colored_terrain(const char *file, int scale) const{
                         image(k_, l_) = Color(0.1, 0.5, 0.1); 
                 }
             }
+        }
     }
+    
     write_image(image, file);
 }
 

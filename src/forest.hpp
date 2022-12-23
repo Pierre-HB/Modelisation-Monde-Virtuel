@@ -30,10 +30,11 @@ enum TreeType { oak, fir };
 struct Tree{
     vec2 position;
     float radius;
+    float proba;
     TreeType type;
     Transform model;
 
-    Tree(vec2 position, float radius, TreeType type): position(position), radius(radius), type(type) {}
+    Tree(vec2 position, float radius, float proba, TreeType type): position(position), radius(radius), proba(proba), type(type) {}
 };
 
 //! representation of a forest using a list of forest tile

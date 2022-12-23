@@ -77,6 +77,7 @@ Forest::Forest(float tree_radius, vec2 size, int nb_tree_max_per_tile, int nb_ti
 ForestTile Forest::get_tile(vec2 p) const{
     int x = fmod(p.x, tileSize.x);
     int y = fmod(p.y, tileSize.y);
+    std::cout << "shoose tile n°" << shuffle[(shuffle[x%shuffle.size()]+y)%shuffle.size()] << std::endl;
     return tiles[shuffle[(shuffle[x%shuffle.size()]+y)%shuffle.size()]];
 }
 
@@ -84,18 +85,25 @@ std::vector<Tree> Forest::get_trees(const Terrain2D *terrain) const{
     TreeType TreeTypes[2] = {oak, fir};
     Vector terrainSize = terrain->get_max_p() - terrain->get_min_p();
     vec2 min_p = vec2(terrain->get_min_p().x, terrain->get_min_p().y);
+    vec2 max_p = vec2(terrain->get_max_p().x, terrain->get_max_p().y);
     std::vector<Tree> trees = std::vector<Tree>();
+    std::uniform_real_distribution<float> u01(0.0, 1.0);
+    std::default_random_engine rng(42); 
+
+    ScalarField2D slopes = terrain->get_slopes();
+
     for(int i = 0; i*tileSize.x < terrainSize.x; i++){
         for(int j = 0; j*tileSize.y < terrainSize.y; j++){
             vec2 offset = vec2(i*tileSize.x, j*tileSize.y) + min_p;
-            // ForestTile tile = get_tile(offset);
-            ForestTile tile = tiles[0];
+            ForestTile tile = get_tile(offset);
+            // ForestTile tile = tiles[0];
             // ForestTile tile = tiles[shuffle[(shuffle[i%shuffle.size()]+j)%shuffle.size()]];
             //TODO populate trees
-            std::uniform_real_distribution<float> u01(0.0, 1.0);
-            std::default_random_engine rng(42);  
+             
             for(vec2 p : tile.trees){
                 vec2 point = p + offset;
+                if(point.x < min_p.x || point.x > max_p.x || point.y < min_p.y || point.y > max_p.y)
+                    continue;
                 //add or not the tree in location p+offset
                 std::vector<float> proba(2);
 
@@ -111,20 +119,27 @@ std::vector<Tree> Forest::get_trees(const Terrain2D *terrain) const{
                     proba[fir] = 0;
                 if(proba[fir] > 1)
                     proba[fir] = 1;
+
                 if(terrain->is_water(point.x, point.y))
                     proba[fir] = 0;
                 
+                proba[fir]/= 1+10*slopes.get_value(point);
                 // proba[fir]/=10;
+                // proba[fir]=1;
                 
                 proba[oak] = 1-terrain->height(point.x, point.y)/500;
                 if(proba[oak] < 0)
                     proba[oak] = 0;
                 if(proba[oak] > 1)
                     proba[oak] = 1;
+
                 if(terrain->is_water(point.x, point.y))
                     proba[oak] = 0;
+
+                proba[oak]/= 1+20*slopes.get_value(point);
                 
                 // proba[oak]/=10;
+                // proba[oak]=1;
 
                 //randomly select tree that can grow
                 float total_proba = 0;
@@ -140,7 +155,7 @@ std::vector<Tree> Forest::get_trees(const Terrain2D *terrain) const{
                     float selection = u01(rng);
                     for(size_t i = 0; i < proba.size(); i++){
                         if(selection < proba[i]/total_proba){
-                            trees.push_back(Tree(p+offset, tile.tree_radius, TreeTypes[i]));
+                            trees.push_back(Tree(p+offset, tile.tree_radius, proba[i], TreeTypes[i]));
                             break;
                         }   
                         else
