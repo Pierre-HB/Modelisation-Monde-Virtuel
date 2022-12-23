@@ -27,8 +27,6 @@ Terrain2D::Terrain2D(InfinitTexture2D *texture, vec2 min_p, vec2 max_p, int nx, 
         }
     }
     slope_max = max_slope();
-
-    forest = Forest(tree_radius, (max_p-min_p)/10);
 }
 
 Terrain2D::Terrain2D(const ScalarField2D& sf, float tree_radius){
@@ -38,7 +36,6 @@ Terrain2D::Terrain2D(const ScalarField2D& sf, float tree_radius){
     min_p = sf.get_min_p();
     max_p = sf.get_max_p();
     slope_max = max_slope();
-    forest = Forest(tree_radius, vec2(max_p.x-min_p.x, max_p.y-min_p.y)/10);
 }
 
 Terrain2D::Terrain2D(const char *filename, vec2 min_p, vec2 max_p, float tree_radius){
@@ -60,8 +57,6 @@ Terrain2D::Terrain2D(const char *filename, vec2 min_p, vec2 max_p, float tree_ra
         }
     }
     slope_max = max_slope();
-
-    forest = Forest(tree_radius, (max_p-min_p)/10);
 }
 
 
@@ -216,6 +211,26 @@ void Terrain2D::connect_cities(){
         } 
     }
 }
+
+
+void Terrain2D::comput_trees(const Forest &forest){
+    trees = forest.get_trees(this);
+}
+
+std::vector<Transform> Terrain2D::get_tree_transform(TreeType type) const{
+    std::vector<Transform> tree_transforms = std::vector<Transform>();
+    std::uniform_real_distribution<float> u(0.0, 360);
+    std::default_random_engine rng(42);
+    for(Tree tree : trees)
+        if(tree.type == type)
+            tree_transforms.push_back(
+                Translation(Vector(tree.position.x, tree.position.y, height(tree.position.x, tree.position.y)))
+                *Scale(tree.radius, tree.radius, tree.radius)
+                *RotationZ(u(rng)));
+    return tree_transforms;
+}
+
+
 
 
 
@@ -541,7 +556,7 @@ void Terrain2D::export_colored_terrain(const char *file, int scale) const{
         }
     }
 
-    for(Tree tree : forest.get_trees(this)){
+    for(Tree tree : trees){
         int r = tree.radius/res;
         std::pair<int, int> coord = get_coordinate(tree.position, m_nx, m_ny);
             for(int k = -r; k <= r; k++){

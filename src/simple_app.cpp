@@ -11,6 +11,7 @@ int SimpleApp::init( )
 {
     // m_objet= read_mesh("data/cube.obj");
     oak = read_mesh("data/oak.obj");
+    fir = read_mesh("data/fir.obj");
     m_objet = Mesh(GL_TRIANGLES);
     if(use_texture)
         m_texture = read_texture(0, texture_file);
@@ -105,6 +106,10 @@ int SimpleApp::render( )
     for(TriangleGroup tg : oak.groups())
         for(Transform model : oaks)
             draw(tg, oak, model, m_camera);
+    
+    for(TriangleGroup tg : fir.groups())
+        for(Transform model : firs)
+            draw(tg, fir, model, m_camera);
     
 
     

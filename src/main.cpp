@@ -119,6 +119,10 @@ int main( int argc, char **argv )
 
     t_.compute_city_paths(10);
 
+    float tree_radius = 5;
+    Forest forest = Forest(tree_radius, vec2(5000, 5000)/10);
+    t_.comput_trees(forest);
+
 
     t_.export_colored_terrain("texture.png", 4);
     t_.apply_water();
@@ -135,11 +139,18 @@ int main( int argc, char **argv )
     t_.export_as_image("height.png");
     if(false)t_.get_occlusions(256).export_as_image("occlusion.png", false);
 
+    
 
-    std::vector<Transform> transforms = std::vector<Transform>();
-    transforms.push_back(Scale(100, 100, 100)*RotationX(90));
+    std::vector<Transform> oaks = t_.get_tree_transform(oak);
+    std::vector<Transform> firs = t_.get_tree_transform(fir);
+
+    for(size_t i = 0; i < oaks.size(); i++)
+        oaks[i] = oaks[i]*RotationX(90);
+    for(size_t i = 0; i < firs.size(); i++)
+        firs[i] = firs[i]*RotationX(90);
+
     const char* texture_file = "texture.png";
-    SimpleApp simple_app = SimpleApp(1024, 640, t_.get_positions(), t_.get_normals(), t_.get_texcoords(), texture_file, t_.get_indexes(), transforms);
+    SimpleApp simple_app = SimpleApp(1024, 640, t_.get_positions(), t_.get_normals(), t_.get_texcoords(), texture_file, t_.get_indexes(), oaks, firs);
     // SimpleApp simple_app = SimpleApp(1024, 640, t_.get_positions(), t_.get_normals(), t_.get_indexes());
     
     // SimpleApp simple_app = SimpleApp(1024, 640, t.get_positions(), t.get_normals(),t.get_slopes().get_values_as_color(), t.get_indexes());

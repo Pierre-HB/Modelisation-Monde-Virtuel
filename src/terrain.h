@@ -34,7 +34,7 @@ private:
     float slope_max;
     std::vector<Path> paths;
     std::vector<City> cities;
-    Forest forest;
+    std::vector<Tree> trees;
 public:
     Terrain2D(InfinitTexture2D *texture, vec2 min_p, vec2 max_p, int nx, int ny, float tree_radius=5);
     Terrain2D(const char *filename, vec2 min_p, vec2 max_p, float tree_radius=5);
@@ -101,6 +101,11 @@ public:
     void compute_city_paths(float tolerence=2.f);
     //! conect cities with the paths linking them
     void connect_cities();
+
+    //! compute the list of Tree on the terrain
+    void comput_trees(const Forest &forest);
+    //! return the list of Tree of the TreeType
+    std::vector<Transform> get_tree_transform(TreeType type) const;
 
     //! return the scalarfield of the slope
     ScalarField2D get_slopes() const;

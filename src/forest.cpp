@@ -114,7 +114,7 @@ std::vector<Tree> Forest::get_trees(const Terrain2D *terrain) const{
                 if(terrain->is_water(point.x, point.y))
                     proba[fir] = 0;
                 
-                proba[fir]/=10;
+                // proba[fir]/=10;
                 
                 proba[oak] = 1-terrain->height(point.x, point.y)/500;
                 if(proba[oak] < 0)
@@ -124,7 +124,7 @@ std::vector<Tree> Forest::get_trees(const Terrain2D *terrain) const{
                 if(terrain->is_water(point.x, point.y))
                     proba[oak] = 0;
                 
-                proba[oak]/=10;
+                // proba[oak]/=10;
 
                 //randomly select tree that can grow
                 float total_proba = 0;
