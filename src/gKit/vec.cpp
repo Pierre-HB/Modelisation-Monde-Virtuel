@@ -154,6 +154,11 @@ float length( const vec2& v )
     return std::sqrt(v.x * v.x + v.y * v.y);
 }
 
+float dot( const vec2& u, const vec2& v )
+{
+    return u.x * v.x + u.y * v.y;
+}
+
 vec2 operator- ( const vec2& u, const vec2& v ){
     return vec2(u.x - v.x, u.y - v.y);
 }

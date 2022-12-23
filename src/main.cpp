@@ -119,6 +119,8 @@ int main( int argc, char **argv )
 
     t_.compute_city_paths(10);
 
+    t_.compute_bvhs();
+
     float tree_radius = 5;
     Forest forest = Forest(tree_radius, vec2(5000, 5000)/10, 10000, 8);
     t_.comput_trees(forest);

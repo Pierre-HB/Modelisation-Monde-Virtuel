@@ -2,6 +2,7 @@
 #include <math.h>
 #include <random>
 #include <string>
+#include <iterator>
 #include "mat.h"
 #include "image.h"
 #include "image_io.h"
@@ -236,6 +237,63 @@ std::vector<Transform> Terrain2D::get_tree_transform(TreeType type) const{
     return tree_transforms;
 }
 
+void Terrain2D::compute_bvhs(){
+
+    //Cities BVH
+    std::vector<vec2> centers_cities = std::vector<vec2>();
+    std::vector<vec2> centers_street = std::vector<vec2>();
+    float city_radius = 0;
+    float street_radius = 0;
+    for(size_t i = 0; i < cities.size(); i++){
+        city_radius = cities[i].get_crossroad_radius();
+        std::vector<vec2> crossroads = cities[i].get_crossroad_centers();
+        centers_cities.insert(
+            centers_cities.end(),
+            std::make_move_iterator(crossroads.begin()),
+            std::make_move_iterator(crossroads.end())
+            );
+        std::vector<Path> city_paths = cities[i].get_paths();
+        for(size_t j = 0; j < city_paths.size(); j++){
+            street_radius = city_paths[j].get_path_size();
+
+            std::vector<vec2> street_point = city_paths[j].get_points();
+            centers_street.insert(
+                centers_street.end(),
+                std::make_move_iterator(street_point.begin()),
+                std::make_move_iterator(street_point.end())
+                );
+
+        }
+    }
+    std::cout << "creating city bvh" << std::endl;
+    bvhs.push_back(BVH(centers_cities, city_radius));
+    std::cout << "creating street bvh" << std::endl;
+    bvhs.push_back(BVH(centers_street, street_radius));
+    std::cout << "end creating city bvh" << std::endl;
+
+    std::vector<vec2> centers_road = std::vector<vec2>();
+    float road_radius = 0;
+    for(size_t i = 0; i < paths.size(); i++){
+        road_radius = paths[i].get_path_size();
+        std::vector<vec2> road_point = paths[i].get_points();
+        centers_road.insert(
+            centers_road.end(),
+            std::make_move_iterator(road_point.begin()),
+            std::make_move_iterator(road_point.end())
+            );
+    }
+    std::cout << "creating road bvh" << std::endl;
+    bvhs.push_back(BVH(centers_road, road_radius));
+
+
+}
+
+bool Terrain2D::intsersection_with_bvh(const vec2& p, float r) const{
+    for(size_t i = 0; i < bvhs.size(); i++)
+        if(bvhs[i].intersection(p, r))
+            return true;
+    return false;
+}
 
 
 

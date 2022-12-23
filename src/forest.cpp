@@ -77,7 +77,6 @@ Forest::Forest(float tree_radius, vec2 size, int nb_tree_max_per_tile, int nb_ti
 ForestTile Forest::get_tile(vec2 p) const{
     int x = fmod(p.x, tileSize.x);
     int y = fmod(p.y, tileSize.y);
-    std::cout << "shoose tile n°" << shuffle[(shuffle[x%shuffle.size()]+y)%shuffle.size()] << std::endl;
     return tiles[shuffle[(shuffle[x%shuffle.size()]+y)%shuffle.size()]];
 }
 
@@ -104,6 +103,12 @@ std::vector<Tree> Forest::get_trees(const Terrain2D *terrain) const{
                 vec2 point = p + offset;
                 if(point.x < min_p.x || point.x > max_p.x || point.y < min_p.y || point.y > max_p.y)
                     continue;
+                if(terrain->is_water(point.x, point.y)){
+                    continue;
+                }
+                if(terrain->intsersection_with_bvh(point, tile.tree_radius)){
+                    continue;
+                }
                 //add or not the tree in location p+offset
                 std::vector<float> proba(2);
 
@@ -115,28 +120,38 @@ std::vector<Tree> Forest::get_trees(const Terrain2D *terrain) const{
 
                 //...
                 proba[fir] = terrain->height(point.x, point.y)/500;
+                if(slopes.get_value(point) > 0.5)
+                    proba[fir]/= 1+10*slopes.get_value(point);
+                else{
+                    proba[fir]/= 1+10*(2*slopes.get_value(point))*slopes.get_value(point);
+                }
+
                 if(proba[fir] < 0)
                     proba[fir] = 0;
                 if(proba[fir] > 1)
                     proba[fir] = 1;
 
-                if(terrain->is_water(point.x, point.y))
-                    proba[fir] = 0;
-                
-                proba[fir]/= 1+10*slopes.get_value(point);
+                                
+                // proba[fir]/= 1+10*slopes.get_value(point);
                 // proba[fir]/=10;
                 // proba[fir]=1;
                 
                 proba[oak] = 1-terrain->height(point.x, point.y)/500;
+                if(slopes.get_value(point) > 0.25)
+                    proba[oak]/= 1+10*slopes.get_value(point);
+                else
+                    proba[oak]/= 1+10*(4*slopes.get_value(point))*slopes.get_value(point);
+
                 if(proba[oak] < 0)
                     proba[oak] = 0;
                 if(proba[oak] > 1)
                     proba[oak] = 1;
 
-                if(terrain->is_water(point.x, point.y))
-                    proba[oak] = 0;
 
-                proba[oak]/= 1+20*slopes.get_value(point);
+
+                // proba[oak]/= 1+20*slopes.get_value(point);
+
+                
                 
                 // proba[oak]/=10;
                 // proba[oak]=1;

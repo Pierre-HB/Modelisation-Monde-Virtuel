@@ -10,6 +10,7 @@
 #include "dijkstra.hpp"
 #include "path.hpp"
 #include "forest.hpp"
+#include "bvh.hpp"
 
 struct neighborhood{
     int size;
@@ -35,6 +36,7 @@ private:
     std::vector<Path> paths;
     std::vector<City> cities;
     std::vector<Tree> trees;
+    std::vector<BVH> bvhs;
 public:
     Terrain2D(InfinitTexture2D *texture, vec2 min_p, vec2 max_p, int nx, int ny, float tree_radius=5);
     Terrain2D(const char *filename, vec2 min_p, vec2 max_p, float tree_radius=5);
@@ -106,6 +108,11 @@ public:
     void comput_trees(const Forest &forest);
     //! return the list of Tree of the TreeType
     std::vector<Transform> get_tree_transform(TreeType type) const;
+    //! compute the BVH of the city, the road and the streets
+    void compute_bvhs();
+    //! compute the intersection between a circle adn every bvh
+    bool intsersection_with_bvh(const vec2& p, float r) const;
+
 
     //! return the scalarfield of the slope
     ScalarField2D get_slopes() const;

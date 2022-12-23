@@ -140,6 +140,7 @@ struct vec2
 };
 
 float length(const vec2& v );
+float dot(const vec2& v, const vec2& u );
 vec2 operator- ( const vec2& u, const vec2& v );
 vec2 operator+ ( const vec2& u, const vec2& v );
 vec2 operator* ( const vec2& u, float v );
@@ -226,6 +227,12 @@ inline std::ostream& operator<<(std::ostream& o, const Point& p)
 inline std::ostream& operator<<(std::ostream& o, const Vector& v)
 {
     o<<"v("<<v.x<<","<<v.y<<","<<v.z<<")";
+    return o;
+}
+
+inline std::ostream& operator<<(std::ostream& o, const vec2& v)
+{
+    o<<"("<<v.x<<","<<v.y<<")";
     return o;
 }
 
