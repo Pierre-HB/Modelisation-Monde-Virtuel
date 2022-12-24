@@ -20,10 +20,18 @@ std::vector<std::vector<float>> gaussian_kernel(int size, float sigma = 1.0f){
 
 void erosion(Terrain2D& t){
     //calibrated for a terrain of res 256
-    int borne = 1000;
+    // int borne = 1000;
+    // for(int _ = 0; _ < borne; _++){
+    //     std::cout << "\33[2K\r[" << _ << "/" << borne << "]" << std::flush;
+    //     t+=0.0001 + (-0.01)*t.get_drains(0.1).map([](float x){return float(pow(x, 0.5));})*t.get_slopes().map([](float x){return float(pow(x, 0.8));}) + (0.5)*t.laplacian();
+    // }
+    int borne = 100;
     for(int _ = 0; _ < borne; _++){
         std::cout << "\33[2K\r[" << _ << "/" << borne << "]" << std::flush;
-        t+=0.0001 + (-0.01)*t.get_drains(0.1).map([](float x){return float(pow(x, 0.5));})*t.get_slopes().map([](float x){return float(pow(x, 0.8));}) + (0.5)*t.laplacian();
+        // t+=0.0001 + (-0.01)*t.get_drains(0.1).map([](float x){return float(pow(x, 0.5));})*t.get_slopes().map([](float x){return float(pow(x, 0.8));}) + (0.5)*t.laplacian();
+        t.add_border_freezed(0.0001 + (-0.01)*t.get_drains(0.1).map([](float x){return float(pow(x, 0.5));})*t.get_slopes().map([](float x){return float(pow(x, 0.8));}) + (0.5)*t.laplacian());
+        
+        // t.apply_water(-10);
     }
 }
 
@@ -54,7 +62,7 @@ int main( int argc, char **argv )
     // Terrain2D t = Terrain2D(perlin_noise, vec2(-5, -5), vec2(5, 5), res, res);
     // Terrain2D t = Terrain2D(noise, vec2(-5, -5.03), vec2(5, 5.03), res, res);
     Terrain2D t = Terrain2D(noise, vec2(-2500, -2500), vec2(2500, 2500), res, res);
-    std::vector<std::vector<float>> kernel = gaussian_kernel(11, 3);
+    std::vector<std::vector<float>> kernel = gaussian_kernel(11*4, 3*4);
 
     Terrain2D t_ = Terrain2D(t.convolution(kernel));
     // Terrain2D t_ = Terrain2D("height.png", vec2(-5, -5), vec2(5, 5));
@@ -67,7 +75,7 @@ int main( int argc, char **argv )
     // hill(t_);
 
     //Geologic equation:
-    // erosion(t_);
+    erosion(t_);
 
     // adjacency_list_t adj = t.get_adjacency_list(2, 2);
     // for(int i = 0; i < adj.size(); i++){
@@ -126,13 +134,26 @@ int main( int argc, char **argv )
     t_.comput_trees(forest);
 
 
-    t_.export_colored_terrain("texture.png", 4);
+    // t_.export_colored_terrain("texture.png", 4);
     t_.export_colored_terrain("texture_.png", 4, false, false, false, false);
     t_.export_colored_terrain("texture_p.png", 4, true, false, false, false);
     t_.export_colored_terrain("texture_ps.png", 4, true, true, false, false);
     t_.export_colored_terrain("texture_psc.png", 4, true, true, true, false);
     t_.export_colored_terrain("texture_psct.png", 4, true, true, true, true);
-    std::vector<const char *> texture_files = std::vector<const char*>({"texture_.png", "texture_p.png", "texture_ps.png", "texture_psc.png", "texture_psct.png"});
+    std::vector<const char *> texture_files = std::vector<const char*>({
+        "height.png",
+        "derivate.png",
+        "laplacian.png",
+        "slope.png",
+        "drain.png",
+        "drain and slope.png",
+        "occlusion.png",
+
+        "texture_.png",
+        "texture_p.png",
+        "texture_ps.png",
+        "texture_psc.png",
+        "texture_psct.png"});
     t_.apply_water();
 
 
@@ -147,6 +168,7 @@ int main( int argc, char **argv )
     t_.export_as_image("height.png");
     if(false)t_.get_occlusions(256).export_as_image("occlusion.png", false);
 
+    t_.apply_water();
     
     std::vector<Transform> oaks = t_.get_tree_transform(oak);
     std::vector<Transform> firs = t_.get_tree_transform(fir);

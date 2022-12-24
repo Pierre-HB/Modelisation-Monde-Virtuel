@@ -27,6 +27,8 @@ public:
     ScalarField2D(const std::vector<float>& values, int nx, int ny, Point min_p, Point max_p);
 
     ScalarField2D& operator+=(const ScalarField2D& other);
+    //! operator += wothtout affecting the border values
+    ScalarField2D& add_border_freezed(const ScalarField2D& other);
     ScalarField2D& operator*=(const ScalarField2D& other);
     ScalarField2D& operator+=(const float& other);
     ScalarField2D& operator*=(const float& other);

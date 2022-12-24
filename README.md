@@ -14,6 +14,11 @@ There are several configuration for the makefile:
 ## Report
 
  * Parler du calcul des prob pour les arbres!
+ * parler de toutes les cartes creable
+ * parler du flou pour eviter la grille du laplacian
+ * erosion, calcul du drain, ponderation des 8 voisins
+ * creation des villes
+ * reation des foret
 
 ## Bug report
  * Nothing

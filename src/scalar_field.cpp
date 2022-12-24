@@ -138,6 +138,15 @@ ScalarField2D& ScalarField2D::operator+=(const ScalarField2D& other){
     update_min_max();
     return *this;
 }
+ScalarField2D& ScalarField2D::add_border_freezed(const ScalarField2D& other){
+    assert(nx==other.nx);
+    assert(ny==other.ny);
+    for(int i = 1; i < nx-1; i++)
+        for(int j = 1; j < ny-1; j++)
+            values[get_index(i, j)]+=other.values[get_index(i, j)];
+    update_min_max();
+    return *this;
+}
 ScalarField2D& ScalarField2D::operator*=(const ScalarField2D& other){
     assert(nx==other.nx);
     assert(ny==other.ny);
