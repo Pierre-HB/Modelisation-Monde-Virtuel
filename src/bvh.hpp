@@ -3,6 +3,7 @@
 
 #include <vector>
 #include "vec.h"
+#include "path.hpp"
 
 //! an abstract class to compute the intersetion between 2D object
 //! such as circle or rectangles
@@ -89,13 +90,18 @@ struct BVH{
     BVH* right;
     vec2 min_p;
     vec2 max_p;
+    size_t max_element_per_leaf; 
     std::vector<Object2D*> objs;
 
     BVH(std::vector<Object2D*> objs, size_t max_element_per_leaf = 100);
 
     //! return if there is an intersection between the BVH and the circle in input
     bool intersection(Object2D* obj) const;
+    //! add an object in the BVH
+    void add(Object2D* obj);
 };
+
+BVH create_bvh_from_paths(std::vector<Path> paths);
 
 
 #endif

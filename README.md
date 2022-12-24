@@ -19,15 +19,10 @@ There are several configuration for the makefile:
  * Nothing
 
 ## TODO
- * erosion thermique
- * erosion techtonique (grosse formule du cours)
- * eclairage direct
- * vegetation
- * Bezier curv ?
+ * avoid tree in houses
+ * avoid houses on road connecting cities
+ * make vegetation/houses/city_circle/... appera and disapear by pressing a button
 
-## TO REALY DO
- * Road network
- * City developpement
 
 ## What is done
  * surcharge des operateur +, *, etc pour les scalar field

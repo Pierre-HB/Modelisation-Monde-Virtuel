@@ -77,6 +77,8 @@ public:
     std::vector<Path> get_paths() const{return paths;}
     //! return if a point is in any crossroad of the city
     bool in_city(const vec2& v) const;
+    //! return the list of Transform of every houses
+    std::vector<Transform> get_houses() const;
 
     bool check_integrity();
 

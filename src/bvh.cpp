@@ -122,7 +122,7 @@ vec2 Rectangle::get_max_p() const{
 }
 
 
-BVH::BVH(std::vector<Object2D*> objs, size_t max_element_per_leaf){
+BVH::BVH(std::vector<Object2D*> objs, size_t max_element_per_leaf): max_element_per_leaf(max_element_per_leaf){
 
 
     min_p = objs[0]->get_min_p();
@@ -160,9 +160,6 @@ BVH::BVH(std::vector<Object2D*> objs, size_t max_element_per_leaf){
             else   
                 right_points.push_back(obj);
         }
-
-
-       
 
         left = new BVH(left_points, max_element_per_leaf);
         right = new BVH(right_points, max_element_per_leaf);
@@ -202,3 +199,64 @@ bool BVH::intersection(Object2D* obj) const{
     }
 }
 
+void BVH::add(Object2D* obj){
+    vec2 min_p_ = obj->get_min_p();
+    vec2 max_p_ = obj->get_max_p();
+    if(min_p_.x < min_p.x)
+        min_p.x = min_p_.x;
+    if(min_p_.y < min_p.y)
+        min_p.y = min_p_.y;
+    if(max_p_.x > max_p.x)
+        max_p.x = max_p_.x;
+    if(max_p_.y > max_p.y)
+        max_p.y = max_p_.y;
+    
+    vec2 mid = (max_p + min_p)/2;
+    vec2 dir = max_p.x - min_p.x > max_p.y - min_p.y ? vec2(1, 0) : vec2(0, 1);
+
+
+    if(type == NODE::leaf){
+        objs.push_back(obj);
+        if(objs.size() >= max_element_per_leaf){
+            type = NODE::node;
+            std::vector<Object2D*> left_points = std::vector<Object2D*>();
+            std::vector<Object2D*> right_points = std::vector<Object2D*>();
+
+            for(Object2D *obj : objs){
+                if(dot(obj->get_center()-mid, dir) < 0)
+                    left_points.push_back(obj);
+                else   
+                    right_points.push_back(obj);
+            }
+            
+            left = new BVH(left_points, max_element_per_leaf);
+            right = new BVH(right_points, max_element_per_leaf);
+        }
+
+    }else{
+
+        if(dot(obj->get_center()-mid, dir) < 0)
+            left->add(obj);
+        else   
+            right->add(obj);
+            
+    }
+}
+
+BVH create_bvh_from_paths(std::vector<Path> paths){
+    std::vector<vec2> centers = std::vector<vec2>();
+    float radius = 0;
+    for(size_t i = 0; i < paths.size(); i++){
+        radius = paths[i].get_path_size();
+        std::vector<vec2> points = paths[i].get_points();
+        centers.insert(
+            centers.end(),
+            std::make_move_iterator(points.begin()),
+            std::make_move_iterator(points.end())
+            );
+    }
+    std::vector<Object2D*> centers_obj = std::vector<Object2D*>();
+    for(vec2 c : centers)
+        centers_obj.push_back(new Circle(c, radius));
+    return BVH(centers_obj);
+}

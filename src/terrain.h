@@ -106,12 +106,14 @@ public:
 
     //! compute the list of Tree on the terrain
     void comput_trees(const Forest &forest);
-    //! return the list of Tree of the TreeType
+    //! return the list of Transform of the TreeType
     std::vector<Transform> get_tree_transform(TreeType type) const;
     //! compute the BVH of the city, the road and the streets
     void compute_bvhs();
     //! compute the intersection between a circle adn every bvh
     bool intsersection_with_bvh(const vec2& p, float r) const;
+    //! compute the list of Transform for the houses of the terrain
+    std::vector<Transform> get_houses_transform() const;
 
 
     //! return the scalarfield of the slope

@@ -145,17 +145,22 @@ int main( int argc, char **argv )
 
     std::vector<Transform> oaks = t_.get_tree_transform(oak);
     std::vector<Transform> firs = t_.get_tree_transform(fir);
+    std::vector<Transform> houses = t_.get_houses_transform();
+    std::cout << houses.size() << " houses" << std::endl;
 
     for(size_t i = 0; i < oaks.size(); i++)
         oaks[i] = oaks[i]*RotationX(90);
     for(size_t i = 0; i < firs.size(); i++)
         firs[i] = firs[i]*RotationX(90);
+    for(size_t i = 0; i < houses.size(); i++)
+        houses[i] = houses[i]*RotationX(90);
     
     std::cout << "oaks : " << oaks.size() << std::endl;
     std::cout << "firs : " << firs.size() << std::endl;
+    std::cout << "houses : " << houses.size() << std::endl;
 
     const char* texture_file = "texture.png";
-    SimpleApp simple_app = SimpleApp(1024, 640, t_.get_positions(), t_.get_normals(), t_.get_texcoords(), texture_file, t_.get_indexes(), oaks, firs);
+    SimpleApp simple_app = SimpleApp(1024, 640, t_.get_positions(), t_.get_normals(), t_.get_texcoords(), texture_file, t_.get_indexes(), oaks, firs, houses);
     // SimpleApp simple_app = SimpleApp(1024, 640, t_.get_positions(), t_.get_normals(), t_.get_indexes());
     
     // SimpleApp simple_app = SimpleApp(1024, 640, t.get_positions(), t.get_normals(),t.get_slopes().get_values_as_color(), t.get_indexes());

@@ -22,6 +22,8 @@ class Path
     void refine(float precision);
     //! return the list of point defining the path (with a max distance between point of 'precision')
     std::vector<vec2> get_points(float precision=std::numeric_limits<float>::max()) const;
+    //! return the direction of the path
+    std::vector<vec2> get_directions(float precision=std::numeric_limits<float>::max()) const;
     //! return the size of the path (in meter)
     float get_path_size() const{return path_size;}
     //! erase the path before the point k

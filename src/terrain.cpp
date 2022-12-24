@@ -241,9 +241,8 @@ void Terrain2D::compute_bvhs(){
 
     //Cities BVH
     std::vector<vec2> centers_cities = std::vector<vec2>();
-    std::vector<vec2> centers_street = std::vector<vec2>();
+    std::vector<Path> streets = std::vector<Path>();
     float city_radius = 0;
-    float street_radius = 0;
     for(size_t i = 0; i < cities.size(); i++){
         city_radius = cities[i].get_crossroad_radius();
         std::vector<vec2> crossroads = cities[i].get_crossroad_centers();
@@ -253,50 +252,20 @@ void Terrain2D::compute_bvhs(){
             std::make_move_iterator(crossroads.end())
             );
         std::vector<Path> city_paths = cities[i].get_paths();
-        for(size_t j = 0; j < city_paths.size(); j++){
-            street_radius = city_paths[j].get_path_size();
-
-            std::vector<vec2> street_point = city_paths[j].get_points();
-            centers_street.insert(
-                centers_street.end(),
-                std::make_move_iterator(street_point.begin()),
-                std::make_move_iterator(street_point.end())
+        streets.insert(
+                streets.end(),
+                std::make_move_iterator(city_paths.begin()),
+                std::make_move_iterator(city_paths.end())
                 );
-
-        }
     }
     std::cout << "creating city bvh" << std::endl;
     std::vector<Object2D*> centers_cities_obj = std::vector<Object2D*>();
     for(vec2 c : centers_cities)
         centers_cities_obj.push_back(new Circle(c, city_radius));
     bvhs.push_back(BVH(centers_cities_obj));
-    // bvhs.push_back(BVH(centers_cities, city_radius));
 
-    std::cout << "creating street bvh" << std::endl;
-    std::vector<Object2D*> centers_street_obj = std::vector<Object2D*>();
-    for(vec2 c : centers_street)
-        centers_street_obj.push_back(new Circle(c, street_radius));
-    bvhs.push_back(BVH(centers_street_obj));
-    // bvhs.push_back(BVH(centers_street, street_radius));
-    std::cout << "end creating city bvh" << std::endl;
-
-    std::vector<vec2> centers_road = std::vector<vec2>();
-    float road_radius = 0;
-    for(size_t i = 0; i < paths.size(); i++){
-        road_radius = paths[i].get_path_size();
-        std::vector<vec2> road_point = paths[i].get_points();
-        centers_road.insert(
-            centers_road.end(),
-            std::make_move_iterator(road_point.begin()),
-            std::make_move_iterator(road_point.end())
-            );
-    }
-    std::cout << "creating road bvh" << std::endl;
-    std::vector<Object2D*> centers_road_obj = std::vector<Object2D*>();
-    for(vec2 c : centers_road)
-        centers_road_obj.push_back(new Circle(c, road_radius));
-    bvhs.push_back(BVH(centers_road_obj));
-    // bvhs.push_back(BVH(centers_road, road_radius));
+    bvhs.push_back(create_bvh_from_paths(streets));
+    bvhs.push_back(create_bvh_from_paths(paths));
 
 
 }
@@ -307,6 +276,20 @@ bool Terrain2D::intsersection_with_bvh(const vec2& p, float r) const{
         if(bvhs[i].intersection(obj))
             return true;
     return false;
+}
+
+std::vector<Transform> Terrain2D::get_houses_transform() const{
+    std::vector<Transform> houses = std::vector<Transform>();
+
+    for(size_t i = 0; i < cities.size(); i++){
+        std::vector<Transform> city_houses = cities[i].get_houses();
+        houses.insert(
+            houses.end(),
+            std::make_move_iterator(city_houses.begin()),
+            std::make_move_iterator(city_houses.end())
+            );
+    }
+    return houses;
 }
 
 

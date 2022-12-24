@@ -12,11 +12,14 @@ int SimpleApp::init( )
     // m_objet= read_mesh("data/cube.obj");
     oak = read_mesh("data/oak.obj");
     fir = read_mesh("data/fir.obj");
+    house = read_mesh("data/home.obj");
 
     for(Transform model : oaks)
         oak.instance(model);
     for(Transform model : firs)
         fir.instance(model);
+    for(Transform model : houses)
+        house.instance(model);
 
     m_objet = Mesh(GL_TRIANGLES);
     if(use_texture)
@@ -114,6 +117,9 @@ int SimpleApp::render( )
     
     for(TriangleGroup tg : fir.groups())
         draw(tg, fir, Identity(), m_camera);
+    
+    for(TriangleGroup tg : house.groups())
+        draw(tg, house, Identity(), m_camera);
     
 
     

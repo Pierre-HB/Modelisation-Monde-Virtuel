@@ -21,6 +21,24 @@ std::vector<vec2> Path::get_points(float precision) const{
     return new_points;
 }
 
+std::vector<vec2> Path::get_directions(float precision) const{
+    std::vector<vec2> new_points = get_points(precision);
+    std::vector<vec2> directions = std::vector<vec2>();
+
+    directions.push_back(new_points[1] - new_points[0]);
+    directions[0] = directions[0]/length(directions[0]);
+
+    for(size_t i = 1; i < new_points.size()-1; i++){
+        directions.push_back(new_points[i+1] - new_points[i-1]);
+        directions[i] = directions[i]/length(directions[i]);
+    }
+    size_t i = new_points.size()-1;
+    directions.push_back(new_points[i] - new_points[i-1]);
+    directions[i] = directions[i]/length(directions[i]);
+
+    return directions;
+}
+
 void Path::cut_before(size_t k){
     if(k > start)
         start = k;

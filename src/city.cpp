@@ -2,7 +2,7 @@
 #include "city.hpp"
 #include <math.h>
 #include <random>
-
+#include "bvh.hpp"
 
 vec2 crossroad::get_neighbor_center(int direction) const{
     vec2 dir = get_direction(direction, nb_direction);
@@ -182,6 +182,49 @@ bool City::in_city(const vec2& v) const{
         if(length(v-node.center) < node.radius)
             return true;
     return false;
+}
+
+std::vector<Transform> City::get_houses() const{
+    std::vector<Transform> houses = std::vector<Transform>();
+    BVH houses_bvh = create_bvh_from_paths(paths);
+
+    float house_longueur = 10+1;
+    float house_largeur = 8+1;
+
+    for(size_t i = 0; i < paths.size(); i++){
+        
+        std::vector<vec2> points = paths[i].get_points(house_longueur);
+        std::vector<vec2> directions = paths[i].get_directions(house_longueur);
+        
+        for(size_t i = 0; i < points.size(); i++){
+            vec2 direction = directions[i];
+            vec2 tangeante = vec2(direction.y, -direction.x);
+            vec2 center1 = points[i] + tangeante*(house_largeur+paths[i].get_path_size()+1);
+            vec2 center2 = points[i] - tangeante*(house_largeur+paths[i].get_path_size()+1);
+
+            Object2D *rec1 = new Rectangle(center1, direction, house_longueur, house_largeur);
+            Object2D *rec2 = new Rectangle(center2, direction, house_longueur, house_largeur);
+
+            if(!houses_bvh.intersection(rec1)){
+                std::cout << "add a house" << std::endl;
+                houses_bvh.add(rec1);
+                float angle = direction.y > 0 ? acos(direction.x) : 2*M_PI - acos(direction.x);
+                
+                houses.push_back(
+                    Translation(Vector(center1.x, center1.y, terrain->height(center1.x, center1.y)))
+                    *RotationZ(degrees(angle)));
+            }
+            if(!houses_bvh.intersection(rec2)){
+                std::cout << "add a house" << std::endl;
+                houses_bvh.add(rec2);
+                float angle = direction.y > 0 ? acos(direction.x) : 2*M_PI - acos(direction.x);
+                
+                houses.push_back(
+                    Translation(Vector(center2.x, center2.y, terrain->height(center2.x, center2.y)))
+                    *RotationZ(degrees(angle)));            }
+        }
+    }
+    return houses;
 }
 
 
