@@ -112,6 +112,8 @@ public:
     void compute_bvhs();
     //! compute the intersection between a circle adn every bvh
     bool intsersection_with_bvh(const vec2& p, float r) const;
+    //! compute houses for every cities
+    void compute_houses(const BVH& bvh);
     //! compute the list of Transform for the houses of the terrain
     std::vector<Transform> get_houses_transform() const;
 
@@ -123,7 +125,7 @@ public:
     //! return the scalarfield of the drain (p an optional parameter to define the norme use to compute the down-flow)
     ScalarField2D get_drains(float p=4) const;
     //! export a colored texture for the terrain. This texture show paths, water, grass, etc
-    void export_colored_terrain(const char *file, int scale=1) const;
+    void export_colored_terrain(const char *file, int scale=1, bool show_paths=true, bool show_street=true, bool show_city_circle=false, bool show_tree=false) const;
 
     //! return the list of Points representing the mesh
     std::vector<vec3> get_positions() const;

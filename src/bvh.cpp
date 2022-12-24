@@ -243,12 +243,12 @@ void BVH::add(Object2D* obj){
     }
 }
 
-BVH create_bvh_from_paths(std::vector<Path> paths){
+BVH create_bvh_from_paths(std::vector<Path> paths, float precision){
     std::vector<vec2> centers = std::vector<vec2>();
     float radius = 0;
     for(size_t i = 0; i < paths.size(); i++){
         radius = paths[i].get_path_size();
-        std::vector<vec2> points = paths[i].get_points();
+        std::vector<vec2> points = paths[i].get_points(precision);
         centers.insert(
             centers.end(),
             std::make_move_iterator(points.begin()),

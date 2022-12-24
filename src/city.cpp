@@ -184,9 +184,9 @@ bool City::in_city(const vec2& v) const{
     return false;
 }
 
-std::vector<Transform> City::get_houses() const{
-    std::vector<Transform> houses = std::vector<Transform>();
-    BVH houses_bvh = create_bvh_from_paths(paths);
+void City::compute_houses(const BVH& bvh){
+    houses = std::vector<Transform>();
+    street_and_houses_bvh = create_bvh_from_paths(paths);
 
     float house_longueur = 10+1;
     float house_largeur = 8+1;
@@ -199,32 +199,23 @@ std::vector<Transform> City::get_houses() const{
         for(size_t i = 0; i < points.size(); i++){
             vec2 direction = directions[i];
             vec2 tangeante = vec2(direction.y, -direction.x);
-            vec2 center1 = points[i] + tangeante*(house_largeur+paths[i].get_path_size()+1);
-            vec2 center2 = points[i] - tangeante*(house_largeur+paths[i].get_path_size()+1);
+            float sens[2] = {1, -1};
+            for(float s : sens){
+                vec2 center = points[i] + tangeante*s*(house_largeur+paths[i].get_path_size()+1);
+                Object2D *rec = new Rectangle(center, direction, house_longueur, house_largeur);
 
-            Object2D *rec1 = new Rectangle(center1, direction, house_longueur, house_largeur);
-            Object2D *rec2 = new Rectangle(center2, direction, house_longueur, house_largeur);
+                if(!street_and_houses_bvh.intersection(rec) && !(bvh.intersection(rec))){
+                    street_and_houses_bvh.add(rec);
+                    float angle = direction.y > 0 ? acos(direction.x) : 2*M_PI - acos(direction.x);
+                    
+                    houses.push_back(
+                        Translation(Vector(center.x, center.y, terrain->height(center.x, center.y)))
+                        *RotationZ(degrees(angle)));
+                }
 
-            if(!houses_bvh.intersection(rec1)){
-                std::cout << "add a house" << std::endl;
-                houses_bvh.add(rec1);
-                float angle = direction.y > 0 ? acos(direction.x) : 2*M_PI - acos(direction.x);
-                
-                houses.push_back(
-                    Translation(Vector(center1.x, center1.y, terrain->height(center1.x, center1.y)))
-                    *RotationZ(degrees(angle)));
             }
-            if(!houses_bvh.intersection(rec2)){
-                std::cout << "add a house" << std::endl;
-                houses_bvh.add(rec2);
-                float angle = direction.y > 0 ? acos(direction.x) : 2*M_PI - acos(direction.x);
-                
-                houses.push_back(
-                    Translation(Vector(center2.x, center2.y, terrain->height(center2.x, center2.y)))
-                    *RotationZ(degrees(angle)));            }
         }
     }
-    return houses;
 }
 
 

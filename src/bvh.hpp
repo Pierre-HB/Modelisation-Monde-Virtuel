@@ -93,6 +93,7 @@ struct BVH{
     size_t max_element_per_leaf; 
     std::vector<Object2D*> objs;
 
+    BVH(): type(NODE::leaf) {};
     BVH(std::vector<Object2D*> objs, size_t max_element_per_leaf = 100);
 
     //! return if there is an intersection between the BVH and the circle in input
@@ -101,7 +102,8 @@ struct BVH{
     void add(Object2D* obj);
 };
 
-BVH create_bvh_from_paths(std::vector<Path> paths);
+BVH create_bvh_from_paths(std::vector<Path> paths, float precision=std::numeric_limits<float>::max());
+
 
 
 #endif

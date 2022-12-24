@@ -51,6 +51,8 @@ private:
     float streat_size;
     std::vector<Path> paths;
     std::vector<vec2> entrences;
+    std::vector<Transform> houses;
+    BVH street_and_houses_bvh;
     
 public:
     //! create a city using Elden growth algorithm, starting at center and growing with cells of radius 'crossroas_radius'
@@ -77,8 +79,12 @@ public:
     std::vector<Path> get_paths() const{return paths;}
     //! return if a point is in any crossroad of the city
     bool in_city(const vec2& v) const;
+    //! compute the houses and the BVH
+    void compute_houses(const BVH& bvh);
     //! return the list of Transform of every houses
-    std::vector<Transform> get_houses() const;
+    std::vector<Transform> get_houses() const {return houses;}
+    //! return the BVH of the street and the houses
+    BVH get_street_and_houses_bvh() const {return street_and_houses_bvh;}
 
     bool check_integrity();
 

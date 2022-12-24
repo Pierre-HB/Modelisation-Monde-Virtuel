@@ -241,7 +241,7 @@ void Terrain2D::compute_bvhs(){
 
     //Cities BVH
     std::vector<vec2> centers_cities = std::vector<vec2>();
-    std::vector<Path> streets = std::vector<Path>();
+    // std::vector<Path> streets = std::vector<Path>();
     float city_radius = 0;
     for(size_t i = 0; i < cities.size(); i++){
         city_radius = cities[i].get_crossroad_radius();
@@ -252,20 +252,27 @@ void Terrain2D::compute_bvhs(){
             std::make_move_iterator(crossroads.end())
             );
         std::vector<Path> city_paths = cities[i].get_paths();
-        streets.insert(
-                streets.end(),
-                std::make_move_iterator(city_paths.begin()),
-                std::make_move_iterator(city_paths.end())
-                );
+        // streets.insert(
+        //         streets.end(),
+        //         std::make_move_iterator(city_paths.begin()),
+        //         std::make_move_iterator(city_paths.end())
+        //         );
     }
     std::cout << "creating city bvh" << std::endl;
     std::vector<Object2D*> centers_cities_obj = std::vector<Object2D*>();
     for(vec2 c : centers_cities)
         centers_cities_obj.push_back(new Circle(c, city_radius));
+    
     bvhs.push_back(BVH(centers_cities_obj));
 
-    bvhs.push_back(create_bvh_from_paths(streets));
-    bvhs.push_back(create_bvh_from_paths(paths));
+    // bvhs.push_back(create_bvh_from_paths(streets));
+    bvhs.push_back(create_bvh_from_paths(paths, 1));
+
+    compute_houses(bvhs[bvhs.size()-1]);
+
+    for(size_t i = 0; i < cities.size(); i++){
+        bvhs.push_back(cities[i].get_street_and_houses_bvh());
+    }
 
 
 }
@@ -278,6 +285,11 @@ bool Terrain2D::intsersection_with_bvh(const vec2& p, float r) const{
     return false;
 }
 
+void Terrain2D::compute_houses(const BVH& bvh){
+    for(size_t i = 0; i < cities.size(); i++){
+        cities[i].compute_houses(bvh);
+    }
+}
 std::vector<Transform> Terrain2D::get_houses_transform() const{
     std::vector<Transform> houses = std::vector<Transform>();
 
@@ -534,7 +546,8 @@ void Terrain2D::apply_water(float water_level){
     }
 }
 
-void Terrain2D::export_colored_terrain(const char *file, int scale) const{
+void Terrain2D::export_colored_terrain(const char *file, int scale, bool show_paths, bool show_street, bool show_city_circle, bool show_tree) const{
+// void Terrain2D::export_colored_terrain(const char *file, int scale) const{
     int m_nx = nx*scale;
     int m_ny = ny*scale;
     Image image(m_nx, m_ny, Color(0));
@@ -567,24 +580,49 @@ void Terrain2D::export_colored_terrain(const char *file, int scale) const{
         City city = cities[i];
         std::cout << "city as " << city.get_paths().size() << " paths." << std::endl;
         int r = city.get_crossroad_radius()/res;
-        for(vec2 crossroad : city.get_crossroad_centers()){
-            if(is_water(crossroad.x, crossroad.y))
-                std::cout << "CAREFOUR DANS L'EAU" << std::endl;
-            std::pair<int, int> coord = get_coordinate(crossroad, m_nx, m_ny);
-            for(int k = -r; k <= r; k++){
-                for(int l = -r; l <= r; l++){
-                    int k_ = k+coord.first;
-                    int l_ = l+coord.second;
-                    if(k*k + l*l <= r*r && k_ >= 0 && k_ < m_nx && l_ >= 0 && l_ < m_ny)
-                        image(k_, l_) = colors[i%8]; 
-                        // image(k_, l_) = Color(0.4, 0.4, 0.4); 
+
+        if(show_city_circle){
+            for(vec2 crossroad : city.get_crossroad_centers()){
+                if(is_water(crossroad.x, crossroad.y))
+                    std::cout << "CAREFOUR DANS L'EAU" << std::endl;
+                std::pair<int, int> coord = get_coordinate(crossroad, m_nx, m_ny);
+                for(int k = -r; k <= r; k++){
+                    for(int l = -r; l <= r; l++){
+                        int k_ = k+coord.first;
+                        int l_ = l+coord.second;
+                        if(k*k + l*l <= r*r && k_ >= 0 && k_ < m_nx && l_ >= 0 && l_ < m_ny)
+                            image(k_, l_) = colors[i%8]; 
+                            // image(k_, l_) = Color(0.4, 0.4, 0.4); 
+                    }
                 }
             }
         }
-
-
         
-        for(Path path : city.get_paths()){
+
+
+        if(show_street){
+            for(Path path : city.get_paths()){
+                std::vector<vec2> points = path.get_points(res/2);
+                int r = path.get_path_size()/res;
+                for(vec2 point : points){
+                    std::pair<int, int> coord = get_coordinate(point, m_nx, m_ny);
+                    for(int k = -r; k <= r; k++){
+                        for(int l = -r; l <= r; l++){
+                            int k_ = k+coord.first;
+                            int l_ = l+coord.second;
+                            if(k*k + l*l <= r*r && k_ >= 0 && k_ < m_nx && l_ >= 0 && l_ < m_ny)
+                                image(k_, l_) = Color(0.2, 0.2, 0.2); 
+                        }
+                    }
+                }
+            }
+        }
+        
+    }
+
+    if(show_paths){
+        for(Path path : paths){
+            std::cout << "resolution : " << res/2 << std::endl;
             std::vector<vec2> points = path.get_points(res/2);
             int r = path.get_path_size()/res;
             for(vec2 point : points){
@@ -594,31 +632,15 @@ void Terrain2D::export_colored_terrain(const char *file, int scale) const{
                         int k_ = k+coord.first;
                         int l_ = l+coord.second;
                         if(k*k + l*l <= r*r && k_ >= 0 && k_ < m_nx && l_ >= 0 && l_ < m_ny)
-                            image(k_, l_) = Color(0.2, 0.2, 0.2); 
+                            image(k_, l_) = Color(0.8, 0.5, 0.3); 
                     }
                 }
             }
         }
     }
-    for(Path path : paths){
-        std::cout << "resolution : " << res/2 << std::endl;
-        std::vector<vec2> points = path.get_points(res/2);
-        int r = path.get_path_size()/res;
-        for(vec2 point : points){
-            std::pair<int, int> coord = get_coordinate(point, m_nx, m_ny);
-            for(int k = -r; k <= r; k++){
-                for(int l = -r; l <= r; l++){
-                    int k_ = k+coord.first;
-                    int l_ = l+coord.second;
-                    if(k*k + l*l <= r*r && k_ >= 0 && k_ < m_nx && l_ >= 0 && l_ < m_ny)
-                        image(k_, l_) = Color(0.8, 0.5, 0.3); 
-                }
-            }
-        }
-    }
+    
 
-    const bool draw_trees = false;
-    if(draw_trees){
+    if(show_tree){
         for(Tree tree : trees){
             int r = tree.radius/res;
             std::pair<int, int> coord = get_coordinate(tree.position, m_nx, m_ny);

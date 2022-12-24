@@ -127,6 +127,12 @@ int main( int argc, char **argv )
 
 
     t_.export_colored_terrain("texture.png", 4);
+    t_.export_colored_terrain("texture_.png", 4, false, false, false, false);
+    t_.export_colored_terrain("texture_p.png", 4, true, false, false, false);
+    t_.export_colored_terrain("texture_ps.png", 4, true, true, false, false);
+    t_.export_colored_terrain("texture_psc.png", 4, true, true, true, false);
+    t_.export_colored_terrain("texture_psct.png", 4, true, true, true, true);
+    std::vector<const char *> texture_files = std::vector<const char*>({"texture_.png", "texture_p.png", "texture_ps.png", "texture_psc.png", "texture_psct.png"});
     t_.apply_water();
 
 
@@ -142,11 +148,9 @@ int main( int argc, char **argv )
     if(false)t_.get_occlusions(256).export_as_image("occlusion.png", false);
 
     
-
     std::vector<Transform> oaks = t_.get_tree_transform(oak);
     std::vector<Transform> firs = t_.get_tree_transform(fir);
     std::vector<Transform> houses = t_.get_houses_transform();
-    std::cout << houses.size() << " houses" << std::endl;
 
     for(size_t i = 0; i < oaks.size(); i++)
         oaks[i] = oaks[i]*RotationX(90);
@@ -160,7 +164,10 @@ int main( int argc, char **argv )
     std::cout << "houses : " << houses.size() << std::endl;
 
     const char* texture_file = "texture.png";
-    SimpleApp simple_app = SimpleApp(1024, 640, t_.get_positions(), t_.get_normals(), t_.get_texcoords(), texture_file, t_.get_indexes(), oaks, firs, houses);
+    
+
+    SimpleApp simple_app = SimpleApp(1024, 640, t_.get_positions(), t_.get_normals(), t_.get_texcoords(), texture_files, t_.get_indexes(), oaks, firs, houses);
+    // SimpleApp simple_app = SimpleApp(1024, 640, t_.get_positions(), t_.get_normals(), t_.get_texcoords(), texture_file, t_.get_indexes(), oaks, firs, houses);
     // SimpleApp simple_app = SimpleApp(1024, 640, t_.get_positions(), t_.get_normals(), t_.get_indexes());
     
     // SimpleApp simple_app = SimpleApp(1024, 640, t.get_positions(), t.get_normals(),t.get_slopes().get_values_as_color(), t.get_indexes());
