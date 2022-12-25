@@ -37,6 +37,11 @@ private:
     std::vector<City> cities;
     std::vector<Tree> trees;
     std::vector<BVH> bvhs;
+
+    ScalarField2D drain;
+
+    //! update itself by computing some data
+    void update();
 public:
     Terrain2D(InfinitTexture2D *texture, vec2 min_p, vec2 max_p, int nx, int ny, float tree_radius=5);
     Terrain2D(const char *filename, vec2 min_p, vec2 max_p, float tree_radius=5);
@@ -52,7 +57,7 @@ public:
     //! height at the point (x, y)
     float height(float x, float y) const;
     //! return if there is water
-    bool is_water(float x, float y) const;
+    bool is_water(float x, float y);
 
     //! return the point at the node (i, j)
     Point point(int i, int j) const;
@@ -78,11 +83,11 @@ public:
      */
     bool ray_intersection(Point o, Vector d, Point* intersection = new Point()) const;
     //! return the cost of traveling between two point
-    float path_cost(vec2 start, vec2 end) const;
+    float path_cost(vec2 start, vec2 end);
     //! return the edge graph using the mask of size 'n' and a map scale of 'scale' (divide nx and ny by 'scale')
-    adjacency_list_t get_adjacency_list(int n, int scale, int min_x, int min_y, int max_x, int max_y) const;
+    adjacency_list_t get_adjacency_list(int n, int scale, int min_x, int min_y, int max_x, int max_y);
     //! return the edge graph using the mask of size 'n' and a map scale of 'scale' (divide nx and ny by 'scale')
-    adjacency_list_t get_adjacency_list(int n, int scale) const;
+    adjacency_list_t get_adjacency_list(int n, int scale);
     //! draw the path between start and end on the terrain
     void draw_path(vec2 start, vec2 end, float road_size = 1, int scale=1, int n=3);
     //! Draw a network connecting points. With a hight tolerence road might be longer (there will be lless road in the network)
@@ -125,7 +130,7 @@ public:
     //! return the scalarfield of the drain (p an optional parameter to define the norme use to compute the down-flow)
     ScalarField2D get_drains(float p=4) const;
     //! export a colored texture for the terrain. This texture show paths, water, grass, etc
-    void export_colored_terrain(const char *file, int scale=1, bool show_paths=true, bool show_street=true, bool show_city_circle=false, bool show_tree=false) const;
+    void export_colored_terrain(const char *file, int scale=1, bool show_paths=true, bool show_street=true, bool show_city_circle=false, bool show_tree=false);
 
     //! return the list of Points representing the mesh
     std::vector<vec3> get_positions() const;

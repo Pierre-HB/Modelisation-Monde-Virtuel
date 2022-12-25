@@ -80,7 +80,7 @@ ForestTile Forest::get_tile(vec2 p) const{
     return tiles[shuffle[(shuffle[x%shuffle.size()]+y)%shuffle.size()]];
 }
 
-std::vector<Tree> Forest::get_trees(const Terrain2D *terrain) const{
+std::vector<Tree> Forest::get_trees(Terrain2D *terrain) const{
     TreeType TreeTypes[2] = {oak, fir};
     Vector terrainSize = terrain->get_max_p() - terrain->get_min_p();
     vec2 min_p = vec2(terrain->get_min_p().x, terrain->get_min_p().y);

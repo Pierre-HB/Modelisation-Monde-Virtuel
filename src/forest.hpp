@@ -53,7 +53,7 @@ class Forest{
     //! return the tile use for the point p
     ForestTile get_tile(vec2 p) const;
     //! populate a terrain with trees
-    std::vector<Tree> get_trees(const Terrain2D *terrain) const;
+    std::vector<Tree> get_trees(Terrain2D *terrain) const;
 };
 
 #endif

@@ -60,6 +60,13 @@ Terrain2D::Terrain2D(const char *filename, vec2 min_p, vec2 max_p, float tree_ra
     slope_max = max_slope();
 }
 
+void Terrain2D::update(){
+    if(!updatated)
+        return;
+    updatated = false;
+    drain = get_drains();
+    slope_max = max_slope();
+}
 
 
 
@@ -166,8 +173,9 @@ vec2 Terrain2D::gradient(int i, int j) const{
     return vec2(gradient_x, gradient_y);
 }
 
-bool Terrain2D::is_water(float x, float y) const{
-    return height(x, y) < 0;
+bool Terrain2D::is_water(float x, float y){
+    update();
+    return height(x, y) < 0 || drain.get_value(vec2(x, y)) > 500;
 }
 
 void Terrain2D::add_city(vec2 position, int nb_crossroad, float crossroad_radius, float streat_size, int nb_direction){
@@ -389,7 +397,7 @@ float Terrain2D::ambiant_occlusion(int i, int j, int nb_ray) const{
     return ambiant;
 }
 
-float Terrain2D::path_cost(vec2 start, vec2 end) const{
+float Terrain2D::path_cost(vec2 start, vec2 end){
     float z = height(start.x, start.y) - height(end.x, end.y);
     float x = start.x - end.x;
     float y = start.y - end.y;
@@ -398,11 +406,11 @@ float Terrain2D::path_cost(vec2 start, vec2 end) const{
     float coef = 1;
     if(is_water(end.x, end.y))
         coef = 20;
-    return coef*(sqrt(x*x + y*y + z*z)+5*abs(x*grad.x + y*grad.y));
+    return coef*(sqrt(x*x + y*y + 50*z*z)+5*abs(x*grad.x + y*grad.y)+drain.get_value(end));
     // return coef*(sqrt(x*x + y*y + 10*z*z)+abs(x*grad.x + y*grad.y));
 }
 
-adjacency_list_t Terrain2D::get_adjacency_list(int n, int scale, int min_x, int min_y, int max_x, int max_y) const{
+adjacency_list_t Terrain2D::get_adjacency_list(int n, int scale, int min_x, int min_y, int max_x, int max_y){
     int m_nx = nx/scale;
     int m_ny = ny/scale;
     adjacency_list_t adjacency_list = std::vector<std::vector<neighbor>>(m_nx*m_ny);
@@ -425,7 +433,7 @@ adjacency_list_t Terrain2D::get_adjacency_list(int n, int scale, int min_x, int 
     return adjacency_list;
 }
 
-adjacency_list_t Terrain2D::get_adjacency_list(int n, int scale) const{
+adjacency_list_t Terrain2D::get_adjacency_list(int n, int scale){
     return get_adjacency_list(n, scale, 0, 0, nx/scale, ny/scale);
 }
 
@@ -546,7 +554,7 @@ void Terrain2D::apply_water(float water_level){
     }
 }
 
-void Terrain2D::export_colored_terrain(const char *file, int scale, bool show_paths, bool show_street, bool show_city_circle, bool show_tree) const{
+void Terrain2D::export_colored_terrain(const char *file, int scale, bool show_paths, bool show_street, bool show_city_circle, bool show_tree){
 // void Terrain2D::export_colored_terrain(const char *file, int scale) const{
     int m_nx = nx*scale;
     int m_ny = ny*scale;
@@ -556,7 +564,8 @@ void Terrain2D::export_colored_terrain(const char *file, int scale, bool show_pa
         for(int j = 0; j < ny; j++)
             for(int k = 0; k < scale; k++)
                 for(int l = 0; l < scale; l++)
-                    if(get_value(i, j) < 0)
+                    if(is_water(get_vec(i, j).x, get_vec(i, j).y))
+                    // if(get_value(i, j) < 0 || drain.get_value(get_vec(i, j)) > 500)
                         image(i*scale + k, j*scale + l) = Color(0.15, 0.35, 0.75);
                     else if(slope(i, j) < 0.6)
                         image(i*scale + k, j*scale + l) = Color(0.2, 0.7, 0.2);
@@ -710,7 +719,7 @@ ScalarField2D Terrain2D::get_slopes() const{
 
 ScalarField2D Terrain2D::get_occlusions(int nb_ray){
     std::vector<float> ambiants = std::vector<float>(values.size());
-    slope_max = max_slope();
+    update();
     int lines = 0;
     std::cout << "[0/" << ny << "]" << std::flush;
     #pragma omp parallel for

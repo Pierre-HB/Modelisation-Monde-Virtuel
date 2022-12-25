@@ -16,7 +16,8 @@ protected:
     const float epsilon = 1.0e-3;
     Point min_p; //! min angle of the bouding box of the terrain
     Point max_p; //! min angle of the bouding box of the terrain
-    
+    float updatated = true; //! tel if the scalarfield was changed
+
 
 public:
     //! empty constructor
@@ -32,6 +33,7 @@ public:
     ScalarField2D& operator*=(const ScalarField2D& other);
     ScalarField2D& operator+=(const float& other);
     ScalarField2D& operator*=(const float& other);
+    ScalarField2D& operator=(const ScalarField2D& other);
 
     friend ScalarField2D operator+(ScalarField2D a, const ScalarField2D& b);
     friend ScalarField2D operator*(ScalarField2D a, const ScalarField2D& b);
@@ -102,6 +104,7 @@ inline float ScalarField2D::get_value(int i, int j) const{
 
 inline void ScalarField2D::set_value(int i, int j, float v){
     values[j*nx + i] = v;
+    updatated = true;
 }
 
 inline int ScalarField2D::get_index(int i, int j) const{

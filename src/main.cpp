@@ -28,8 +28,8 @@ void erosion(Terrain2D& t){
     int borne = 100;
     for(int _ = 0; _ < borne; _++){
         std::cout << "\33[2K\r[" << _ << "/" << borne << "]" << std::flush;
-        // t+=0.0001 + (-0.01)*t.get_drains(0.1).map([](float x){return float(pow(x, 0.5));})*t.get_slopes().map([](float x){return float(pow(x, 0.8));}) + (0.5)*t.laplacian();
-        t.add_border_freezed(0.0001 + (-0.01)*t.get_drains(0.1).map([](float x){return float(pow(x, 0.5));})*t.get_slopes().map([](float x){return float(pow(x, 0.8));}) + (0.5)*t.laplacian());
+        t+=0.0001 + (-0.01)*t.get_drains(0.1).map([](float x){return float(pow(x, 0.5));})*t.get_slopes().map([](float x){return float(pow(x, 0.8));}) + (0.5)*t.laplacian();
+        // t.add_border_freezed(0.0001 + (-0.01)*t.get_drains(0.1).map([](float x){return float(pow(x, 0.5));})*t.get_slopes().map([](float x){return float(pow(x, 0.8));}) + (0.5)*t.laplacian());
         
         // t.apply_water(-10);
     }
@@ -115,7 +115,7 @@ int main( int argc, char **argv )
     // std::cout << "path length (3->4): ";
     // t_.draw_path(city4, city5, 10*road_size, 3, 4);
     // std::cout << "NETWORK" << std::endl;
-    t_.add_paths(t_.get_network_path(cities, 5, 2, 4));
+    t_.add_paths(t_.get_network_path(cities, 5, 2, 1));
     t_.refine(1);
     t_.add_city(city1, 16, 25, 3);
     t_.add_city(city2, 16, 25, 3);

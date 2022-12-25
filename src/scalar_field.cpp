@@ -136,6 +136,7 @@ ScalarField2D& ScalarField2D::operator+=(const ScalarField2D& other){
     for(size_t i = 0; i < values.size(); i++)
         values[i]+=other.values[i];
     update_min_max();
+    updatated = true;
     return *this;
 }
 ScalarField2D& ScalarField2D::add_border_freezed(const ScalarField2D& other){
@@ -145,6 +146,7 @@ ScalarField2D& ScalarField2D::add_border_freezed(const ScalarField2D& other){
         for(int j = 1; j < ny-1; j++)
             values[get_index(i, j)]+=other.values[get_index(i, j)];
     update_min_max();
+    updatated = true;
     return *this;
 }
 ScalarField2D& ScalarField2D::operator*=(const ScalarField2D& other){
@@ -153,6 +155,7 @@ ScalarField2D& ScalarField2D::operator*=(const ScalarField2D& other){
     for(size_t i = 0; i < values.size(); i++)
         values[i]*=other.values[i];
     update_min_max();
+    updatated = true;
     return *this;
 }
 ScalarField2D& ScalarField2D::operator+=(const float& other){
@@ -160,6 +163,7 @@ ScalarField2D& ScalarField2D::operator+=(const float& other){
         values[i]+=other;
     max_p.z+=other;
     min_p.z+=other;
+    updatated = true;
     return *this;
 }
 ScalarField2D& ScalarField2D::operator*=(const float& other){
@@ -167,8 +171,19 @@ ScalarField2D& ScalarField2D::operator*=(const float& other){
         values[i]*=other;
     max_p.z*=other;
     min_p.z*=other;
+    updatated = true;
     return *this;
 }
+ScalarField2D& ScalarField2D::operator=(const ScalarField2D& other){
+    nx = other.get_nx();
+    ny = other.get_ny();
+    values = other.get_values();
+    min_p = other.get_min_p();
+    max_p = other.get_max_p();
+    updatated = true;
+    return *this;
+}
+
 
 ScalarField2D ScalarField2D::derivate_x() const{
     float ex = (max_p.x - min_p.x)/(nx-1);
