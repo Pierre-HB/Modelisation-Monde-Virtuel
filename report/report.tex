@@ -28,293 +28,80 @@
 
 \pagestyle{fancy}
 \begin{center}
-\textbf{\huge Report Implicit Surface}
+\textbf{\huge Report virtual world generation}
 \end{center}
 
 \pagestyle{fancy}
 
-% \begin{figure}[h]
-%   \centering
-%   \includegraphics[scale=1]{rec3-400.png}{}
-%   % \includegraphics[scale=0.7]{rec3_-_800.png}{}
-% \end{figure}
-
 \begin{figure}[!h]
-\null\hfill
-\subfigure[barkless tree\label{tree-pres}]{\includegraphics[scale=0.3]{tree_images/tree-rec3.png}{}}
-\hfill
-\subfigure[barked tree\label{bark-pres}]{\includegraphics[scale=0.3]{tree_images/bark-rec3.png}{}}
-\hfill
+  \centering
+  \includegraphics[scale=0.2]{full_scene.png}{}
 \end{figure}
 
+\section*{Utilitary}
 
-
-\section*{What I implemented}
-
-\paragraph{} Object of arity 0:
+\paragraph{} I can export several scalar field from my terrain:
 \begin{itemize}
-	\item A sphere of radius $r$ and center $c$.
-	\item A capsule of skeleton defined by the segment between $a$ and $b$ and a radius $r$.
+	\item Slopes
+	\item Occlusion
+	\item Drain
+	\item Derivate (on x and y)
+	\item Laplacian
 \end{itemize}
 
-\paragraph{} Object of arity 2:	
-
-\begin{itemize}
-	\item Standards union, intersection and difference operators.
-	\item Smooth union, intersection and difference operators.
-\end{itemize}
-
-\paragraph{} Object of arity 1:
-\begin{itemize}
-	\item The translation by a vector $v$.
-	\item The rotation by an angle $\theta$ around an axis $\omega$.
-	\item The replication of $n$ copie around an axis $\omega$ (explained later).
-	\item The simplification (explained in anexe).
-	\item The surface noise\cite{lagae2009procedural} (explained in anexe).
-\end{itemize}
-
-\paragraph{} For each of those objects, I automatically compute a bounding box (use for the meshing of the object), a bounding sphere (use for the simplification) and a skeleton direction (use for the surface noise).
-
-\section*{How I have implemented}
-
-
-\subsection*{Bounding volumes and skeleton direction}
-
-\paragraph{} To compute the bounding boxes, bounding spheres and the skeleton direction, I walk on my tree, computing the data of a node using the data of its children.
-
-\paragraph{Bounding Box} The bounding box of a sphere or a capsule is trivial to compute. For operators, I simply take the bounding box of the multiple bounding box of the childrens.
-
-\paragraph{Bousing sphere} Like the bounding box, it's easy to compute the bounding sphere of a sphere or a capsule. For operators, I simply take the bounding sphere of the multiple bounding sphere of the childrens.
-
-
-\paragraph{Skeleton direction} Unlike the two previous paragraphs, the skeleton direction of a sphere is not defined. I choose an arbitrary unitary direction for the skeleton direction of the sphere. For operators I compute a relevant skeleton direction based on the skeleton direction of childrens.
-
-
-
-
-\subsection*{The replication}
-
-\paragraph{} The replication of $n$ copie of the children around an axis $\omega$ work as follow:
- first compute the BSF to the children, then rotate the children of an angle $\frac{2\pi}{n}$ around the axis $\omega$. Repeat until you have made a whole rotation and return the \texttt{min} of all the values.
-
-
-\subsection*{The simplification}
-
-\paragraph{} The simplification operator does not modify the represented object, it just helps to compute the BSF of far away points faster. To achieve that, it returns the distance to the bounding sphere for far away points. The details and proof of lipschitzianity if given in annexe.
-
-
-\subsection*{The surface noise\cite{zanni2013modelisation}}
-
-\paragraph{} It applies a Gabor noise\cite{lagae2009procedural} at the surface of the object to create small random variation on the surface. To compute the surface noise, I project my point on the surface and compute the gabor noise in a local fram computed using the skeleton direction and the normal at that point. More details are given in anexe.
-
-
-\newpage
-\section*{The ternary tree}
-
-% \begin{figure}[!h]
-% \null\hfill
-% \subfigure[Barked tree with depth of 3\label{fig1a}]{%
-%      \includegraphics[scale=1]{ecorsse_rec3-200.png}{}}
-%      % \includegraphics[scale=0.6]{ecorsse_rec3-400.png}{}}
-%      % \includegraphics[scale=0.3]{ecorsse_rec3_-_800.png}{}}
-% \hfill
-% \subfigure[Barkless tree with depth of 7\label{fig1b}]{%
-%      \includegraphics[scale=1]{rec7-200.png}{}}
-%      % \includegraphics[scale=0.6]{rec7-400.png}{}}
-%      % \includegraphics[scale=0.25]{rec7_-_800.png}{}}
-% \hfill\null
-% % \caption{Une figure divisee en deux}\label{fig1}
-% \end{figure}
-\paragraph{} Here are some picture of my tree:
+Here is the results:
 \begin{figure}[!h]
-\null\hfill
-\subfigure[n=0\label{tree0}]{\includegraphics[scale=0.6]{tree_images/downscale/tree-rec0.png}{}}
-\hfill
-\subfigure[n=1\label{tree1}]{\includegraphics[scale=0.6]{tree_images/downscale/tree-rec1.png}{}}
-\hfill
-\subfigure[n=2\label{tree2}]{\includegraphics[scale=0.6]{tree_images/downscale/tree-rec2.png}{}}
-\hfill\null
-\end{figure}
-\begin{figure}[!h]
-\null\hfill
-\subfigure[n=3\label{tree3}]{\includegraphics[scale=0.6]{tree_images/downscale/tree-rec3.png}{}}
-\hfill
-\subfigure[n=4\label{tree4}]{\includegraphics[scale=0.6]{tree_images/downscale/tree-rec4.png}{}}
-\hfill
-\subfigure[n=6\label{tree6}]{\includegraphics[scale=0.6]{tree_images/downscale/tree-rec5.png}{}}
-\hfill\null
-\caption{Different barkless tree with a recursion level $n$}
+  \centering
+  \includegraphics[scale=0.2]{full_scene.png}{}
+  \caption{a caption}
 \end{figure}
 
+\section*{Erosion}
+
+\paragraph{} I implemented the smooth hill erosion and a rain erosion using the equation $...$. After what I can add colors to help visualize the terrain, puting water bellow the height $0$ and at every point where the drain is greater than a certain threshold (to have rivers). I then add grass where the slope is small enought and rock every where else.
 \begin{figure}[!h]
-\null\hfill
-\subfigure[n=0\label{bark0}]{\includegraphics[scale=0.6]{tree_images/downscale/bark-rec0.png}{}}
-\hfill
-\subfigure[n=1\label{bark1}]{\includegraphics[scale=0.6]{tree_images/downscale/bark-rec1.png}{}}
-\hfill
-\subfigure[n=2\label{bark2}]{\includegraphics[scale=0.6]{tree_images/downscale/bark-rec2.png}{}}
-\hfill\null
-\end{figure}
-\begin{figure}[!h]
-\null\hfill
-\subfigure[n=3\label{bark3}]{\includegraphics[scale=0.6]{tree_images/downscale/bark-rec3.png}{}}
-\hfill
-\subfigure[n=4\label{bark4}]{\includegraphics[scale=0.6]{tree_images/downscale/bark-rec4.png}{}}
-\hfill
-\subfigure[n=6\label{bark6}]{\includegraphics[scale=0.6]{tree_images/downscale/bark-rec5.png}{}}
-\hfill\null
-\caption{Different barked tree with a recursion level $n$}
+  \centering
+  \includegraphics[scale=0.2]{full_scene.png}{}
+  \caption{raw terrain, smoothed terrain, eroded terrain, colored terrain}
 \end{figure}
 
-\paragraph{} The object that I choose to represent is a recursive tree, made of a capsule and three other trees. I also added on the tree some bark modelised with a surface noise. Because the noise is very costly to compute, the recursion level is only of 3.
+\section*{Civilisation}
 
-\paragraph{} More specifically, the tree is either:
+\paragraph{} I used Dijkstra for shortest path computation and geometry graphs for network generation.
+
+\subsection*{Roads between cities}
+
+\paragraph{} Given a set of position (the cities locations), I compute the shortest path between each pair of cities (using Dijkstra algorithm on a weigthed network (weigths are computing depending on the terrain specification (slope, size, water...))) and then, I remove useless path (a path between $A$ and $B$ is useless if, for a fixes real $\alpha$, there exists another point $C$ such that $\left| AB \right|^\alpha > \left| AC \right|^\alpha + \left| CB \right|^\alpha$). To get a road network linking every cities.
+
+\subsection*{Streets inside cities}
+
+\paragraph{} To generate cities, I used a Eden growth algorithm to create crossroads. After what, I simply link them together in the same way as I linked cities. Finaly, I walk along each street, adding a house if possible (If the house does not intersect a street or another house, the intersection computation is done using a Bounding Volume Hierarchy to speed up the process).
+
+\subsection*{results}
+
+\begin{figure}[!h]
+  \centering
+  \includegraphics[scale=0.2]{full_scene.png}{}
+  \caption{raw terrain, smoothed terrain and eroded terrain}
+\end{figure}
+
+\section*{Nature}
+
+\paragraph{} Finaly, I can generate forest of different tree type. In order to do that, I precompute several forest tiles using a drath throwing algorithm. Of course, I make sure that I can put every tile next to each other. Once the set of tile generated, I simply pave the terrain with forest tile and create a tree at each tree location of each tiles.
+
+\subparagraph{} To create a tree, I compute a probability of creation for every tree types. Then I draw a random number for each tree types to know if it can be created or not.
 \begin{itemize}
-	\item one \texttt{Capsule} (for the last recursive level)
-	\item A smooth union of a \texttt{Capsule} and a \texttt{replication of a translation of a rotation of a simplification of a tree}
+	\item If no tree is created, I do nothing
+	\item if one tree type can be created, I create it (instanciate the tree model with a random size proportional to the probability of creation)
+	\item If more than two tree can be created, I select one tree type randomly (see ANEXES).
 \end{itemize}
 
-For the noise, I choose a gabor noise with an averadge of 30 point per unit cube and a projecting direction of (-1, -2, 0) in the local frame (normal, bitangeant, tangeant).
+\paragraph{} The probability of creation is $0$ if there is some water, road or house in the tree location. This is computed using the same intersection algorithm as the houses intersection (SEE ANEXES).
 
+\section*{Anexes}
 
+TODO
 
-
-\section*{Anexe}
-
-\subsection*{Simplification details}
-
-\paragraph{} Let consider an object represented by a BSF $f$ and bounding by a sphere of centre $c$ and radius $r$. Then, the simplification of this object is a new BSF $f_k$ (with $k>1$) defined by:
-
-
-\[
-f_k(p) = (1-\alpha_k(p))f(p) + \alpha_k(p)f_S(p)
-\]
-
-with
-\[
-\alpha_k(p) = \left\{\begin{array}{lll}
-	0 & \mbox{if } \left\Vert p - c \right\Vert < r \\
-	\frac{\left\Vert p - c \right\Vert - r}{(k-1)r} & \mbox{if } r < \left\Vert p - c \right\Vert < kr \\
-	1 & \mbox{else.}
-	\end{array}
-	\right.
-\]
-
-and
-\[
-f_S(p) = \left\Vert p - c \right\Vert - r
-\]
-
-\subsection*{The surface is the same : $f(p)=0 \Leftrightarrow f_k(p)=0$}
-\paragraph{} The object is still the same :
-\begin{itemize}
-\item $f(p)=0 \Rightarrow f_k(p)=0$
-\item $f_k(p)=0 \Rightarrow f(p)=0$ Because $\alpha_k(p)f_S(p) \ge 0$ and $\alpha_k(p)f_S(p) = 0 \Rightarrow p \in B(c, r)$
-\end{itemize}
-
-\subsection*{$f_k$ is $1 + \frac{k+2}{k-1}$ lipschitz.}
-\paragraph{Property} Lets first show that: For $A$ and $B$ two convexe set such that $A \subset B$ and $f$ a function continuous defined on $B$ such that $f$ is $\lambda_A$ lipschitz on $A$ and $\lambda_B$ lipschitz on $B - A$ then $f$ is $\max(\lambda_A, \lambda_B)$ lipshitz on $B$.
-
-\begin{itemize}
-	\item $\forall x, y \in A $ : $\left| f(x) - f(y) \right| \le \lambda_A \left\Vert x - y \right\Vert \le \max(\lambda_A, \lambda_B) \left\Vert x - y \right\Vert$
-	\item $\forall x, y \in B-A $ : $\left| f(x) - f(y) \right| \le \lambda_B \left\Vert x - y \right\Vert \le \max(\lambda_A, \lambda_B) \left\Vert x - y \right\Vert$
-	\item $\forall x \in A$ and $\forall y \in B-A$ : $\exists t \in \left[ 0, 1\right]$ such that $y' = tx + (1-t)y \in \overline{B-A} \cap A$ ($y'$ is on the segment $\left[ x, y\right]$ and at the frontiere between $A$ and $B-A$). Then $\left\Vert x - y \right\Vert = \left\Vert x - y' \right\Vert + \left\Vert y' - y \right\Vert$. 
-	\newline We have: $\left| f(x) - f(y) \right| = \left| f(x) -f(y') + f(y') - f(y) \right| \le \left| f(x) -f(y') \right| + \left| f(y') - f(y) \right| \le \lambda_A \left\Vert x - y' \right\Vert + \lambda_B \left\Vert y' - y \right\Vert \le \max(\lambda_A, \lambda_B) \left\Vert x - y' \right\Vert + \max(\lambda_A, \lambda_B) \left\Vert y' - y \right\Vert = \max(\lambda_A, \lambda_B) \left\Vert x - y \right\Vert$
-\end{itemize}
-
-In every case $f$ is $\max(\lambda_A, \lambda_B)$ lipchitz on $B$.
-
-\paragraph{$\alpha$ is $\frac{1}{(k-1)r}$ lipschitz:}
-
-\begin{itemize}
-	\item $\forall x, y \in B(c, rk) - B(c, r)$ : $\left\Vert \alpha(x) - \alpha(y) \right\Vert = \frac{\left\Vert x-c \right\Vert - \left\Vert y - c \right\Vert}{(k-1)r} \le \frac{\left\Vert x-y \right\Vert}{(k-1)r}$ (because of the triangular inequality)
-	\item $\forall x, y \in B(c, r)$ : $\left\Vert \alpha(x) - \alpha(y) \right\Vert = \left\Vert 0 - 0 \right\Vert = 0$
-	\item $\forall x, y \in \mathbb{R}^3 - B(c, r)$ : $\left\Vert \alpha(x) - \alpha(y) \right\Vert = \left\Vert 1 - 1 \right\Vert = 0$
-		
-	\item $\forall x \in B(c, r)$ and $\forall y \in B(c, rk) - B(c, r)$ : Because $B(c, rk)$ and $B(c, r)$ are convexe, by appling the property, we have : $\left| \alpha(x) - \alpha(y) \right| \le \max(0, \frac{1}{(k-1)r})\left\Vert x-y \right\Vert = \frac{\left\Vert x-y \right\Vert}{(k-1)r}$
-
-	\item $\forall x \in B(c, kr)$ and $\forall y \in \mathbb{R}^3 - B(c, kr)$ by using the same argument, we have : $\left| \alpha(x) - \alpha(y) \right| \le \frac{\left\Vert x-y \right\Vert}{(k-1)r}$
-
-
-
-\end{itemize}
-In evry case, $\alpha$ is $\frac{1}{(k-1)r}$ lipschitz.
-
-\paragraph{$f_k$ is $1 + \frac{k+2}{k-1}$ lipschitz} We have $f_k(p) = (1-\alpha_k(p))f(p) + \alpha_k(p)f_S(p)$ with
-\begin{itemize}
-	\item $\alpha_k$ : $\mathbb{R}^3 \to \left[0, 1\right]$, $\lambda_\alpha$ lipschitz.
-	\item $f$ : $\mathbb{R}^3 \to \mathbb{R}$, $\lambda_1$ lipschitz.
-	\item $f_S$ : $\mathbb{R}^3 \to \mathbb{R}$, $\lambda_2$ lipschitz.
-\end{itemize}
-
-Then, $\forall x, y \in \mathbb{R}^3$:
-
-
-\begin{align*}
-	\left| f_k(x) - f_k(y) \right| &= \left| (1-\alpha_k(x))f(x) + \alpha_k(x)f_S(x) - (1-\alpha_k(y))f(y) - \alpha_k(y)f_S(y) \right| \\
-	&= | \alpha_k(x)f_S(x) ~~- \alpha_k(x)f_S(y) + \alpha_k(x)f_S(y) ~~- \alpha_k(y)f_S(y)  \\
-	&~~~~+  (1-\alpha_k(x))f(x) ~~- (1-\alpha_k(x))f(y) + (1-\alpha_k(x))f(y) - (1-\alpha_k(y))f(y) | \\
-	&= | \alpha_k(x)[f_S(x) - f_S(y)] + f_S(y)[\alpha_k(x) - \alpha_k(y)]  \\
-	&~~~~+  (1-\alpha_k(x))[f(x) -f(y)] + f(y)[(1-\alpha_k(x)) - (1-\alpha_k(y))] | \\ \\
-	 \texttt{ because}~~& f(y)[(1-\alpha_k(x)) - (1-\alpha_k(y))] = -f(y)(\alpha_k(x) - \alpha_k(y)) \\ \\
-	&= \left| \alpha_k(x)(f_S(x) - f_S(y)) + (1-\alpha_k(x))(f(x) -f(y)) + (f_S(y) - f(y))(\alpha_k(x) - \alpha_k(y)) \right| \\
-	& \le \left| \alpha_k(x)(f_S(x) - f_S(y)) \right| + \left| (1-\alpha_k(x))(f(x) -f(y)) \right| + \left| (f_S(y) - f(y))(\alpha_k(x) - \alpha_k(y)) \right| \\
-	& = \alpha_k(x)\left|f_S(x) - f_S(y) \right| +  (1-\alpha_k(x))\left|f(x) -f(y) \right| + \left| (f_S(y) - f(y))(\alpha_k(x) - \alpha_k(y)) \right| \\
-	& \le \alpha_k(x)\lambda_2 \left\Vert x - y \right\Vert +  (1-\alpha_k(x))\lambda_1 \left\Vert x - y \right\Vert + \left| (f_S(y) - f(y))\right|\lambda_\alpha \left\Vert x - y \right\Vert \\
-	& \le \left[\max(\lambda_1, \lambda_2) + \lambda_\alpha \sup_{y}(\left| f_S(y) - f(y)\right|) \right]\left\Vert x - y \right\Vert \\
-\end{align*}
-
-
-On $B(c, kr)$ we have: $\lambda_1 = \lambda_2 = 1$, $\lambda_\alpha = \frac{1}{(k-1)r}$.
-Furthemore:
-\begin{itemize}
-	\item $\lambda_1 = \lambda_2 = 1$
-	\item $\lambda_\alpha = \frac{1}{(k-1)r}$
-	\item 
-		\begin{list}{$\circ$}{}  
-		\item $ -r \le f(y) \le (k+1)r$ 
-		\item $ -r \le f_S(y) \le (k-1)r$
-		\end{list}
-		which imply that:
-		\begin{list}{$\circ$}{}  
-			\item $ -(k+2)r = -(k+1)r - r \le f_S(y)-f(y) \le r + (k-1)r = kr$
-			\item $ -kr = -(k-1)r - r \le f(y)-f_S(y) \le r + (k+1)r = (k+2)r$
-		\end{list}
-		Which led to : $\sup_{y}(\left| f_S(y) - f(y)\right|) \le (k+2)r$
-\end{itemize}
-\paragraph{} We finnaly have:
-\begin{itemize}
-	\item $\forall x, y \in B(c, kr)$ : $\left| f_k(x) - f_k(y) \right| \le (1 + \frac{k+2}{(k-1)})\left\Vert x - y \right\Vert $
-	\item $\forall x, y \in \mathbb{R}^3 - B(c, kr)$ : $\left| f_k(x) - f_k(y) \right| = \left| f_S(x) - f_S(y) \right| \le \left\Vert x - y \right\Vert$
-	\item Because $B(c, kr)$ and $\mathbb{R}^3$ are convexe, $\forall x \in B(c, kr)$ and $\forall y \in \mathbb{R}^3 - B(c, kr)$ : $\left| f_k(x) - f_k(y) \right| \le \max(1 + \frac{k+2}{k-1}, 1) \left\Vert x - y \right\Vert = (1 + \frac{k+2}{k-1})\left\Vert x - y \right\Vert$
-\end{itemize}
-In every case, we have shown that $f_k$ is $1 + \frac{k+2}{k-1}$ lipschitz.
-
-
-\subsection*{Surface noise details}
-
-\paragraph{} I followed the implementation of the paper\cite{zanni2013modelisation} with some adjustment:
-\subparagraph{} The base of the algorithm consist on :
-\begin{enumerate}
-	\item Compute a local frame.
-	\item Projecting a point on the surface (following the gradient direction or an arbitrary direction in the local frame).
-	\item Computing another local frame at the surface.
-	\item Generating random points following a poisson process.
-	\item Projecting those random points in the surface local frame.
-	\item Evaluate the Gabor kernel for each of the projected point and sum up the results.
-	\item Add the noise to the initial SDB.
-\end{enumerate}
-
-
-My adjustments:
-\begin{itemize}
-	\item Because the gabor kernel has an infinite support, to compute the noise, the original paper\cite{lagae2009procedural} choose to cut the kernel with a radius of $\frac{1}{a}$ ($a$ behind a parameter of the noise). they say that it corresponds to an error of 5\%. I encounter some problems with the normals with this cut, I choose to cut with a radius of $\frac{10}{a}$.
-	\item My gabor kernel is normalised with a coefficient going from $1$ to $0$ depending on the distance to the centre of the kernel ($0$ is obtained at a distance of $\frac{10}{a}$).
-\end{itemize}
-
-
-\bibliographystyle{abbrv}
-\bibliography{report}
 
 
 \end{document}

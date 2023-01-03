@@ -4,3 +4,7 @@ bin
 obj
 *.png
 .vscode/settings.json
+report/report.bbl
+report/report.aux
+report/report.blg
+report/report.log
