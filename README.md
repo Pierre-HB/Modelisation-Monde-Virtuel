@@ -19,6 +19,7 @@ There are several configuration for the makefile:
  * erosion, calcul du drain, ponderation des 8 voisins
  * creation des villes
  * reation des foret
+ * parler des slalome pour monter les pentes
 
 ## Bug report
  * Nothing
