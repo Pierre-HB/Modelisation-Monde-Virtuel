@@ -63,6 +63,7 @@ float ScalarField2D::get_value(vec2 p) const{
 
 void ScalarField2D::export_as_image(const char *file, bool normalisation) const{
     Image image(nx, ny, Color(0));
+    std::cout << file << " [" << min_p.z << ", " << max_p.z << "]" << std::endl;
 
     for(int i = 0; i < nx; i++)
         for(int j = 0; j < ny; j++)
@@ -166,11 +167,27 @@ ScalarField2D& ScalarField2D::operator+=(const float& other){
     updatated = true;
     return *this;
 }
+ScalarField2D& ScalarField2D::operator-=(const float& other){
+    for(size_t i = 0; i < values.size(); i++)
+        values[i]-=other;
+    max_p.z-=other;
+    min_p.z-=other;
+    updatated = true;
+    return *this;
+}
 ScalarField2D& ScalarField2D::operator*=(const float& other){
     for(size_t i = 0; i < values.size(); i++)
         values[i]*=other;
     max_p.z*=other;
     min_p.z*=other;
+    updatated = true;
+    return *this;
+}
+ScalarField2D& ScalarField2D::operator/=(const float& other){
+    for(size_t i = 0; i < values.size(); i++)
+        values[i]/=other;
+    max_p.z/=other;
+    min_p.z/=other;
     updatated = true;
     return *this;
 }

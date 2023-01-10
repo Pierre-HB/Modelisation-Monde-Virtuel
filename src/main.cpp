@@ -160,13 +160,54 @@ int main( int argc, char **argv )
     
 
     std::cout << "p_min : " << t_.get_min_p() << ", p_max : " << t_.get_max_p() << std::endl;
-    (t_.derivate_x() + t_.derivate_y()).export_as_image("derivate.png");
-    t_.get_slopes().export_as_image("slope.png");
-    t_.get_drains().map([](float x){return sqrt(x);}).export_as_image("drain.png");
-    (t_.get_drains()*t_.get_slopes()).map([](float x){return sqrt(x);}).export_as_image("drain and slope.png");
-    t_.laplacian().export_as_image("laplacian.png");
-    t_.export_as_image("height.png");
-    if(false)t_.get_occlusions(256).export_as_image("occlusion.png", false);
+    
+    bool normalize = false;
+    if(normalize){
+        (t_.derivate_x() + t_.derivate_y()).export_as_image("derivate.png");
+        t_.get_slopes().export_as_image("slope.png");
+        t_.get_drains().map([](float x){return sqrt(x);}).export_as_image("drain.png");
+        (t_.get_drains()*t_.get_slopes()).map([](float x){return sqrt(x);}).export_as_image("drain and slope.png");
+        t_.laplacian().export_as_image("laplacian.png");
+        t_.export_as_image("height.png");
+        if(false)t_.get_occlusions(256).export_as_image("occlusion.png", false);
+    }else{
+        float min_v = -1.47537;
+        float max_v = 1.63691;
+        (((t_.derivate_x() + t_.derivate_y()) - min_v)/(max_v-min_v)).export_as_image("derivate.png", false);
+        
+        min_v = 0.0000;
+        max_v = 1.37223;
+        ((t_.get_slopes() - min_v)/(max_v-min_v)).export_as_image("slope.png", false);
+        
+        min_v = 1;
+        max_v = 449.805/32;
+        ((t_.get_drains().map([](float x){return sqrt(sqrt(x));})-min_v)/(max_v-min_v)).export_as_image("drain.png", false);
+        
+        min_v = 0.00;
+        max_v = 131.14/12;
+        (((t_.get_drains()*t_.get_slopes()).map([](float x){return sqrt(sqrt(x));})-min_v)/(max_v-min_v)).export_as_image("drain and slope.png", false);
+        
+        min_v = -0.00878154;
+        max_v = 0.00873555;
+        min_v = -0.00878154*5;
+        max_v = 0.00873555*5;
+        ((t_.laplacian()-min_v)/(max_v-min_v)).export_as_image("laplacian.png", false);
+        
+        min_v = -524.506;
+        max_v = 605.216;
+        ((t_-min_v)/(max_v-min_v)).export_as_image("height.png", false);
+        
+        if(false)t_.get_occlusions(256).export_as_image("occlusion.png", false);
+    }
+    
+
+// derivate.png [-1.47537, 1.63691]
+// slope.png [0.000871667, 1.37223]
+// drain.png [1, 449.805]
+// drain and slope.png [0.029524, 131.14]
+// laplacian.png [-0.00878154, 0.00873555]
+// height.png [-524.506, 605.216]
+
 
     t_.apply_water();
     

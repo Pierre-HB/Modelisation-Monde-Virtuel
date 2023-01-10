@@ -720,6 +720,7 @@ ScalarField2D Terrain2D::get_slopes() const{
 ScalarField2D Terrain2D::get_occlusions(int nb_ray){
     std::vector<float> ambiants = std::vector<float>(values.size());
     update();
+    // slope_max = 1;
     int lines = 0;
     std::cout << "[0/" << ny << "]" << std::flush;
     #pragma omp parallel for

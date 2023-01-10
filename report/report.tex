@@ -11,6 +11,11 @@
 \usepackage{amsfonts}
 \usepackage{graphicx}
 \usepackage{subfigure}
+\usepackage{hyperref}
+
+% \usepackage{algorithm2e}
+
+
 
 
 
@@ -33,75 +38,118 @@
 
 \pagestyle{fancy}
 
-\begin{figure}[!h]
-  \centering
-  \includegraphics[scale=0.2]{full_scene.png}{}
-\end{figure}
+% \begin{figure}[!h]
+%   \centering
+%   \includegraphics[scale=0.2]{full_scene.png}{}
+% \end{figure}
 
 \section*{Utilitary}
 
-\paragraph{} I can export several scalar field from my terrain:
-\begin{itemize}
-	\item Slopes
-	\item Occlusion
-	\item Drain
-	\item Derivate (on x and y)
-	\item Laplacian
-\end{itemize}
+\paragraph{} I can export several scalar field from my terrain: the Slopes, occlusion, drain, derivate (on x and y) and laplacian.
 
 Here is the results:
-\begin{figure}[!h]
-  \centering
-  \includegraphics[scale=0.2]{full_scene.png}{}
-  \caption{a caption}
-\end{figure}
+% \begin{figure}[!h]
+%   \centering
+%   \includegraphics[scale=0.2]{full_scene.png}{}
+%   \caption{The terrain textured with different map. From left to right : no map, slope map, oclusion map, square root of the drain map, derivate map and laplacian map}
+% \end{figure}
 
 \section*{Erosion}
 
-\paragraph{} I implemented the smooth hill erosion and a rain erosion using the equation $...$. After what I can add colors to help visualize the terrain, puting water bellow the height $0$ and at every point where the drain is greater than a certain threshold (to have rivers). I then add grass where the slope is small enought and rock every where else.
-\begin{figure}[!h]
-  \centering
-  \includegraphics[scale=0.2]{full_scene.png}{}
-  \caption{raw terrain, smoothed terrain, eroded terrain, colored terrain}
-\end{figure}
+\paragraph{} I implemented a rain erosion using the equation $\nabla h = u + S^{\frac{m}{2}}A^m+ \Delta h$ (with $h$ the height field, $u$ the uplift constant, $S$ the slop map, $A$ the drain map and $m$ a constant (I used $m=1$)). After what I can add colors to help visualize the terrain, puting water bellow the height $0$ and at every point where the drain is greater than a certain threshold (to have rivers). I then add grass where the slope is small enought and rock every where else.
+% \begin{figure}[!h]
+%   \centering
+%   \includegraphics[scale=0.2]{full_scene.png}{}
+%   \caption{eroded terrain and textured terrain (mettre 2 image cote a cote ?)}
+% \end{figure}
+
+\paragraph{} There is some artefact at the sides of the terrain. After simulating the  erosion, the terrain seems to be melt down. This is due to a snowball effect with the slope and drain map. At the border, the simulated water have limited choice to spread down, this create a very narrow but powerful stream that will create a deep river. This river will increase the local slope, that will further increase the drain and the power of the water stream and will further inrease the erosion at the border of the terrain. I tried to fix that by not moving the height of point at the terrain border, but it didn't work.
 
 \section*{Civilisation}
 
-\paragraph{} I used Dijkstra for shortest path computation and geometry graphs for network generation.
+% \paragraph{} I used Dijkstra for shortest path computation and geometry graphs for network generation. My Dijkstra implementation is from the web site 
 
 \subsection*{Roads between cities}
 
-\paragraph{} Given a set of position (the cities locations), I compute the shortest path between each pair of cities (using Dijkstra algorithm on a weigthed network (weigths are computing depending on the terrain specification (slope, size, water...))) and then, I remove useless path (a path between $A$ and $B$ is useless if, for a fixes real $\alpha$, there exists another point $C$ such that $\left| AB \right|^\alpha > \left| AC \right|^\alpha + \left| CB \right|^\alpha$). To get a road network linking every cities.
+% \paragraph{} Given a set of position (the cities locations), I compute the shortest path between each pair of cities (using Dijkstra algorithm on a weigthed network (from \href{https://rosettacode.org/wiki/Dijkstra\%27s_algorithm}{rosetta code}) (weigths are computing depending on the local feature of the terrain (slope, height, water...))) and then, I remove useless path (a path between $A$ and $B$ is useless if, for a fixes real $\alpha$, there exists another point $C$ such that $\left| AB \right|^\alpha > \left| AC \right|^\alpha + \left| CB \right|^\alpha$). To get a road network linking every cities.
+
+\paragraph{} Given a set of position (the cities locations), I am able to create a network linking ccities.
+\subparagraph{} I start by computing the shortest path between each pair of cities (using Dijkstra algorithm on a weigthed network (from \href{https://rosettacode.org/wiki/Dijkstra\%27s_algorithm}{rosetta code}) (weigths are computing depending on the local feature of the terrain (slope, height, water...))).
+\subparagraph{} After what, I remove useless path. A path between $A$ and $B$ is useless if, for a fixes real $\alpha$, there exists another point $C$ such that $\left| AB \right|^\alpha > \left| AC \right|^\alpha + \left| CB \right|^\alpha$.
 
 \subsection*{Streets inside cities}
 
-\paragraph{} To generate cities, I used a Eden growth algorithm to create crossroads. After what, I simply link them together in the same way as I linked cities. Finaly, I walk along each street, adding a house if possible (If the house does not intersect a street or another house, the intersection computation is done using a Bounding Volume Hierarchy to speed up the process).
+\paragraph{} To generate cities, I used a Eden growth algorithm to create crossroads centers. After what, I simply link them together in the same way as I linked cities. I then walk along each street, adding a house if possible (If the house does not intersect a street or another house, the intersection computation is done using a \hyperref[sec:anexe_bvh]{Bounding Volume Hierarchy (BVH)} to speed up the process).
 
 \subsection*{results}
 
-\begin{figure}[!h]
-  \centering
-  \includegraphics[scale=0.2]{full_scene.png}{}
-  \caption{raw terrain, smoothed terrain and eroded terrain}
-\end{figure}
+% \begin{figure}[!h]
+%   \centering
+%   \includegraphics[scale=0.2]{full_scene.png}{}
+%   \caption{raw terrain, smoothed terrain and eroded terrain}
+% \end{figure}
 
 \section*{Nature}
 
-\paragraph{} Finaly, I can generate forest of different tree type. In order to do that, I precompute several forest tiles using a drath throwing algorithm. Of course, I make sure that I can put every tile next to each other. Once the set of tile generated, I simply pave the terrain with forest tile and create a tree at each tree location of each tiles.
+\paragraph{} I can generate forest of different tree types.
+\newline In order to do that, I precompute several forest tiles using a dart throwing algorithm. Of course, I make sure that I can put every tile next to each other. Once the set of tile generated, I simply pave the terrain with forest tile and create a tree at each tree location of each tiles.
 
-\subparagraph{} To create a tree, I compute a probability of creation for every tree types. Then I draw a random number for each tree types to know if it can be created or not.
-\begin{itemize}
-	\item If no tree is created, I do nothing
-	\item if one tree type can be created, I create it (instanciate the tree model with a random size proportional to the probability of creation)
-	\item If more than two tree can be created, I select one tree type randomly (see ANEXES).
-\end{itemize}
+\subparagraph{} To create a tree, I compute a probability of creation for every tree types (depending on the local feature of the terrain) and create it acordingly (\hyperref[sec:anexe_tree]{More details in anexes}).
+% \begin{itemize}
+% 	\item If no tree is created, I do nothing
+% 	\item if one tree type can be created, I create it (instanciate the tree model with a random size proportional to the probability of creation)
+% 	\item If more than two tree can be created, I select one tree type randomly (see ANEXES).
+% \end{itemize}
 
-\paragraph{} The probability of creation is $0$ if there is some water, road or house in the tree location. This is computed using the same intersection algorithm as the houses intersection (SEE ANEXES).
+% \paragraph{} The probability of creation is $0$ if there is some water, road or house in the tree location. This is computed using the same intersection algorithm as the houses intersection (SEE ANEXES).
 
 \section*{Anexes}
 
-TODO
+
+\subsection*{BVH}
+\label{sec:anexe_bvh}
+
+\paragraph{} I use a tree to compute the intersection between an object and a big set of objects. This tree is build using the following reccursive rules:
+\begin{itemize}
+  \item If there is less than $n$ objects (I use $n=100$), I simply store all objects and compute the bounding box of the set of object.
+  \item If there is more than $n$ objects, I compute the bounding box of the set of objects and the longest axis of it. I then divide the set of objects in two part along this axis and create two children from it.
+\end{itemize}
+
+\subparagraph{} Once the tree created, to compute the intersection with an object, I reccursively check the intersection with the bounding boxe of a node and if needed I continue to check the intersection with it's children.
+
+\subparagraph{} I can also trivialy add an object in the tree dynamically (I just compute in wich leaf the object must be and I put it here. I change the leaf in an internal node if there is more than $n$ object).
+
+\subsection*{Probability of tree}
+\label{sec:anexe_tree}
+
+% \paragraph{} Let $p_1, \cdots, p_n \in [0, 1]$ the probability of creation of $n$ different tree type. To choose wich tree to spwan, I follow this process:
+
+% \subparagraph{} for each tree type of probability $p$, I draw a random number $r$ following the uniform law between $0$ and $1$. If $r < p$ I keep the tree type, otherwise I disard it.
+% \newline After this process, If I have kept no tree, I stop. If I kept one tree type, I create this tree type. Otherwise, I compute a normalized probability. Let $I$ be the set on kept tree. $\forall i \in I, \hat{p_i} = \frac{p_i}{\sum_{j \in I}p_j}$. I then draw a random number $r$ and, for each $i \in I$ if $r < p_i$ I create this tree type and I stop, otherwise $r \leftarrow r - p_i$
+
+% \paragraph{} In theoriee, what I want to sample $T_I$ define by:
+% \newline For $i \in [\![ 1, n ]\!]$, let $T_i$ be the random variable following a Bernoulli distribution of probability $p_i$. Let $I = {i \in [\![ 1, n ]\!] | T_i = 1}$
+% \subseteq [\![ 1, n ]\!]$, let define $\hat{p_i} = \frac{p_i}{\sum_{j \in I}p_j}$. We define $T_I$ a random variable that take value in $I$ : $\mathbb{P}(T_I = i) = \hat{p_i}$. I then compute the random variable $I = {i \in [\![ 1, n ]\!] | T_i = 1}$
+
+\paragraph{} In theoriee, what I want to sample $T$ define by:
+\newline For $i \in [\![ 1, n ]\!]$ ($n$ being the number of tree types), let $T_i$ be the random variable following a Bernoulli distribution of probability $p_i$ (telling if I create or not this tree type). Then, we can define random variables $I = \{i \in [\![ 1, n ]\!] | T_i = 1\} \subseteq [\![ 1, n ]\!]$ and finaly $T$ such that $\forall i \in I, \mathbb{P}(T_I = i) = \frac{p_i}{\sum_{j \in I}p_j}$.
+
+\paragraph{} To do that, I draw a random variable $r$ for each tree type of probability $p_i$. If $r < p_i$, I include $i$ in my set $I$. 
+\newline At the end, if $I$ is empty, I create no tree.
+\newline Otherwise, I compute the differents probabilities $\hat{p_i} = \frac{p_i}{\sum_{j \in I}p_j}$ and draw one single random number $r$. Then, for each $i$ in $I$, if $r < \hat{p_i}$, I stop and create the tree type ascociated to the probability $\hat{p_i}$. Else, I substract $\hat{p_i}$ from $r$ and continue.
+
+% We finaly define $T_I$ a random variable that take value in $I$ : $\mathbb{P}(T_I = i) = \hat{p_{i, I}}$. I then compute the random variable $I = {i \in [\![ 1, n ]\!] | T_i = 1}$
 
 
+% \begin{algorithmic}
+% \State $i \gets 10$
+% \If{$i\geq 5$} 
+%     \State $i \gets i-1$
+% \Else
+%     \If{$i\leq 3$}
+%         \State $i \gets i+2$
+%     \EndIf
+% \EndIf 
+% \end{algorithmic}
 
 \end{document}

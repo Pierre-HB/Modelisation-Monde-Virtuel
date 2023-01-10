@@ -32,7 +32,9 @@ public:
     ScalarField2D& add_border_freezed(const ScalarField2D& other);
     ScalarField2D& operator*=(const ScalarField2D& other);
     ScalarField2D& operator+=(const float& other);
+    ScalarField2D& operator-=(const float& other);
     ScalarField2D& operator*=(const float& other);
+    ScalarField2D& operator/=(const float& other);
     ScalarField2D& operator=(const ScalarField2D& other);
 
     friend ScalarField2D operator+(ScalarField2D a, const ScalarField2D& b);
@@ -134,7 +136,9 @@ inline vec2 ScalarField2D::get_vec(int i, int j, int nx_, int ny_) const{
 inline ScalarField2D operator+(ScalarField2D a, const ScalarField2D& b){return a+=b;}
 inline ScalarField2D operator*(ScalarField2D a, const ScalarField2D& b){return a*=b;}
 inline ScalarField2D operator+(ScalarField2D a, const float& b){return a+=b;}
+inline ScalarField2D operator-(ScalarField2D a, const float& b){return a-=b;}
 inline ScalarField2D operator*(ScalarField2D a, const float& b){return a*=b;}
+inline ScalarField2D operator/(ScalarField2D a, const float& b){return a/=b;}
 inline ScalarField2D operator+(const float& b, ScalarField2D a){return a+=b;}
 inline ScalarField2D operator*(const float& b, ScalarField2D a){return a*=b;}
 #endif
