@@ -28,16 +28,28 @@ uniform mat4 mvpMatrix;
     out vec4 vertex_color;
 #endif
 
+#ifdef USE_INSTANCES
+    layout(location= 5) in mat4 instance;
+#endif
+
 
 void main( )
 {
+#ifdef USE_INSTANCES
+    gl_Position= mvpMatrix * transpose(instance) * vec4(position, 1);
+#else
     gl_Position= mvpMatrix * vec4(position, 1);
+#endif
     
 #ifdef USE_TEXCOORD
     vertex_texcoord= texcoord;
 #endif
 
-#ifdef USE_NORMAL
+#if defined USE_NORMAL && defined USE_INSTANCES
+    vertex_normal= mat3(normalMatrix) * mat3(transpose(instance)) * normal;
+#endif
+
+#if defined USE_NORMAL && !defined USE_INSTANCES
     vertex_normal= mat3(normalMatrix) * normal;
 #endif
 

@@ -2,6 +2,7 @@
 #define _SCALAR_FIELD_H
 
 #include <vector>
+#include <string>
 #include "vec.h"
 #include "color.h"
 #include "infinit_texture.h"
@@ -13,71 +14,131 @@ protected:
     int ny; //! Number of point on the y axis (second axis) of the gris
     std::vector<float> values; //! vector of size nx, ny. Value (i, j) is located at the position j*nx+i
     const float epsilon = 1.0e-3;
-    //! get the value at node (i, j)
-    float get_value(int i, int j) const;
-    //! set the value at node (i, j)
-    void set_value(int i, int j, float v);
-
-public:
-//! TODO
-    // float laplacian(int i, int j);
-
-};
-
-class Terrain2D: public ScalarField2D
-{
-private:
-    float slope_max;
-protected:
     Point min_p; //! min angle of the bouding box of the terrain
     Point max_p; //! min angle of the bouding box of the terrain
-    InfinitTexture2D *texture; //! texture to compute heights
+    float updatated = true; //! tel if the scalarfield was changed
+
 
 public:
-    Terrain2D(InfinitTexture2D *texture, vec2 min_p, vec2 max_p, int nx, int ny);
-    ~Terrain2D(){};
-    //find a way to free the texture
+    //! empty constructor
+    ScalarField2D();
+    //! copy
+    ScalarField2D(const ScalarField2D& cpy);
+    //! constructor from a list of value
+    ScalarField2D(const std::vector<float>& values, int nx, int ny, Point min_p, Point max_p);
 
-    //! height at the node (i, j)
-    float height(int i, int j) const;
-    //! height at the point (x, y)
-    float height(float x, float y) const;
+    ScalarField2D& operator+=(const ScalarField2D& other);
+    //! operator += wothtout affecting the border values
+    ScalarField2D& add_border_freezed(const ScalarField2D& other);
+    ScalarField2D& operator*=(const ScalarField2D& other);
+    ScalarField2D& operator+=(const float& other);
+    ScalarField2D& operator-=(const float& other);
+    ScalarField2D& operator*=(const float& other);
+    ScalarField2D& operator/=(const float& other);
+    ScalarField2D& operator=(const ScalarField2D& other);
 
-    //! return the point at the node (i, j)
-    Point point(int i, int j) const;
+    friend ScalarField2D operator+(ScalarField2D a, const ScalarField2D& b);
+    friend ScalarField2D operator*(ScalarField2D a, const ScalarField2D& b);
+    friend ScalarField2D operator+(ScalarField2D a, const float& b);
+    friend ScalarField2D operator*(ScalarField2D a, const float& b);
+    friend ScalarField2D operator+(const float& b, ScalarField2D a);
+    friend ScalarField2D operator*(const float& b, ScalarField2D a);
 
-    //! The 2D gradiant of the height at the node (i, j)
-    vec2 gradiant(int i, int j) const;
-    //! normal at the node (i, j)
-    Vector normal(int i, int j) const;
-    //! length of the gradiant at the node (i, j)
-    float slope(int i, int j) const;
-    //! max slope of the terrain
-    float max_slope() const;
-    //! ambiant occlusion at the node (i, j)
-    float ambiant_occlusion(int i, int j) const;
+    //! compute min and max value of field
+    ScalarField2D update_min_max();
+    //! get the value at node (i, j)
+    float get_value(int i, int j) const;
+    //! get the value at postion p
+    float get_value(vec2 p) const;
+    //! set the value at node (i, j)
+    void set_value(int i, int j, float v);
+    //! return the index in the values vector of the node (i, j)
+    int get_index(int i, int j) const;
+    //! return the pair (i, j) assosciated to an index in the values array
+    std::pair<int, int> get_coordinate(int index) const;
+    //! return the pair (i, j) assosciated to the point v
+    std::pair<int, int> get_coordinate(vec2 v) const;
+    //! return the pair (i, j) assosciated to the point v
+    std::pair<int, int> get_coordinate(vec2 v, int nx_, int ny_) const;
+    //! return the index in the values vector of the node (i, j)
+    int get_index(int i, int j, int nx_, int ny_) const;
+    //! return the vec2 corrsponding to the node (i, j)
+    vec2 get_vec(int i, int j) const;
+    //! return the vec2 corrsponding to the node (i, j)
+    vec2 get_vec(int i, int j, int nx_, int ny_) const;
+    //! return the pair (i, j) assosciated to an index in the values array
+    std::pair<int, int> get_coordinate(int index, int nx_, int ny_) const;
+    //! export as a grayscale image
+    void export_as_image(const char *file, bool normalisation = true) const;
+    //! return the values vector
+    std::vector<float> get_values() const; 
+    //! return nx
+    int get_nx() const{return nx;}
+    //! return ny
+    int get_ny() const{return ny;}
+    //! return min_p
+    Point get_min_p() const{return min_p;}
+    //! return max_p
+    Point get_max_p() const{return max_p;}
+    //! return the value vector as color
+    std::vector<Color> get_values_as_color() const;
+    //! return the scalarfield maped by the function f
+    ScalarField2D map(float (*function)(float)) const;
+    //! return the convolution with a kernel
+    //! kernel[i][j] is the kernel value at line i and collumn j
+    //! Be carefull during the convolution, the kernel is transpose
+    ScalarField2D convolution(const std::vector<std::vector<float>>& kernel) const;
 
-    /**
-     * @brief return the intersection point with a ray
-     * 
-     * @param o : origine of the ray
-     * @param d : direction of the ray
-     * @param intersection : optional, the ref of a vec3 that will be set to the inetersection if there is an intersection
-     * @return bool : true if there is an intersection
-     */
-    bool ray_intersection(Point o, Vector d, Point* intersection) const;
-    bool ray_intersection(Point o, Vector d) const;
+    //! return the scalarfield of the derivation with respect to x
+    ScalarField2D derivate_x() const;
+    //! return the scalarfield of the derivation with respect to y
+    ScalarField2D derivate_y() const;
+    //! return the laplacian at node (i, j)
+    float laplacian(int i, int j) const;
+    //! return the scalarfield of the laplacian
+    ScalarField2D laplacian() const;
 
-    //! return the list of Points representing the mesh
-    std::vector<vec3> get_positions() const;
-    //! return the list of Normals representing the mesh
-    std::vector<vec3> get_normals() const;
-    //! return the list of indexes representing the mesh
-    std::vector<int> get_indexes() const;
-    //! return the list of Colors representing the slope at each node
-    std::vector<Color> get_slope_color() const;
-    //! return the list of Colors representing the slope at each node
-    std::vector<Color> get_occlusion_color() const;
 };
 
+inline float ScalarField2D::get_value(int i, int j) const{
+    return values[j*nx + i];
+}
+
+inline void ScalarField2D::set_value(int i, int j, float v){
+    values[j*nx + i] = v;
+    updatated = true;
+}
+
+inline int ScalarField2D::get_index(int i, int j) const{
+    return j*nx+i;
+}
+
+inline std::pair<int, int> ScalarField2D::get_coordinate(int index) const{
+    return std::pair<int, int>(index % nx, index / nx);
+}
+
+inline int ScalarField2D::get_index(int i, int j, int nx_, int ny_) const{
+    return j*nx_ + i;
+}
+
+inline std::pair<int, int> ScalarField2D::get_coordinate(int index, int nx_, int ny_) const{
+    return std::pair<int, int>(index % nx_, index / nx_);
+}
+
+inline vec2 ScalarField2D::get_vec(int i, int j) const{
+    return vec2(float(i)/(nx-1) * (max_p.x-min_p.x) + min_p.x, float(j)/(ny-1) * (max_p.y-min_p.y) + min_p.y);
+}
+
+inline vec2 ScalarField2D::get_vec(int i, int j, int nx_, int ny_) const{
+    return vec2(float(i)/(nx_-1) * (max_p.x-min_p.x) + min_p.x, float(j)/(ny_-1) * (max_p.y-min_p.y) + min_p.y);
+}
+
+inline ScalarField2D operator+(ScalarField2D a, const ScalarField2D& b){return a+=b;}
+inline ScalarField2D operator*(ScalarField2D a, const ScalarField2D& b){return a*=b;}
+inline ScalarField2D operator+(ScalarField2D a, const float& b){return a+=b;}
+inline ScalarField2D operator-(ScalarField2D a, const float& b){return a-=b;}
+inline ScalarField2D operator*(ScalarField2D a, const float& b){return a*=b;}
+inline ScalarField2D operator/(ScalarField2D a, const float& b){return a/=b;}
+inline ScalarField2D operator+(const float& b, ScalarField2D a){return a+=b;}
+inline ScalarField2D operator*(const float& b, ScalarField2D a){return a*=b;}
 #endif

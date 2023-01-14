@@ -101,6 +101,14 @@ unsigned int Mesh::vertex( const vec3& position )
     return index;
 }
 
+unsigned int Mesh::instance( const Transform& t ){
+    m_update_buffers= true;
+    m_instances.push_back(t);
+    unsigned int index= m_positions.size() -1;
+    return index;
+}
+
+
 // update attributes
 Mesh& Mesh::color( const unsigned int id, const vec4& c )
 {
@@ -142,6 +150,8 @@ void Mesh::clear( )
     m_normals.clear();
     m_colors.clear();
     m_indices.clear();
+
+    m_instances.clear();
     //~ m_materials.clear();
     m_triangle_materials.clear();
 }
@@ -536,7 +546,7 @@ protected:
 };
 
 
-GLuint Mesh::create_buffers( const bool use_texcoord, const bool use_normal, const bool use_color, const bool use_material_index )
+GLuint Mesh::create_buffers( const bool use_texcoord, const bool use_normal, const bool use_color, const bool use_material_index, const bool use_instances )
 {
     if(m_positions.size() == 0)
         return 0;
@@ -550,6 +560,8 @@ GLuint Mesh::create_buffers( const bool use_texcoord, const bool use_normal, con
         printf("[oops] mesh: no color array...\n");
     if(use_material_index && !has_material_index())
         printf("[oops] mesh: no material index array...\n");
+    if(use_instances && !has_instances())
+        printf("[oops] mesh: no instances array...\n");
 #endif
     
     if(m_vao)
@@ -570,7 +582,9 @@ GLuint Mesh::create_buffers( const bool use_texcoord, const bool use_normal, con
         m_vertex_buffer_size+= color_buffer_size();
     if(use_material_index && has_material_index())
         m_vertex_buffer_size+= m_positions.size() * sizeof(unsigned char);
-    
+    if(use_instances && has_instances())
+        m_vertex_buffer_size+= m_instances.size()*sizeof(Transform);
+
     // alloue le buffer
     glGenBuffers(1, &m_buffer);
     glBindBuffer(GL_ARRAY_BUFFER, m_buffer);
@@ -586,12 +600,12 @@ GLuint Mesh::create_buffers( const bool use_texcoord, const bool use_normal, con
     }
 
     // transfere les donnees dans les buffers
-    update_buffers(use_texcoord,  use_normal, use_color, use_material_index);
+    update_buffers(use_texcoord,  use_normal, use_color, use_material_index, use_instances);
     
     return m_vao;
 }
 
-int Mesh::update_buffers( const bool use_texcoord, const bool use_normal, const bool use_color, const bool use_material_index )
+int Mesh::update_buffers( const bool use_texcoord, const bool use_normal, const bool use_color, const bool use_material_index, const bool use_instances )
 {
     assert(m_vao > 0);
     assert(m_buffer > 0);
@@ -614,7 +628,9 @@ int Mesh::update_buffers( const bool use_texcoord, const bool use_normal, const 
         size+= color_buffer_size();
     if(use_material_index && has_material_index())
         size+= m_positions.size() * sizeof(unsigned char);
-    
+    if(use_instances && has_instances())
+        size+= m_instances.size()*sizeof(Transform);
+
     if(size != m_vertex_buffer_size)
     {
         m_vertex_buffer_size= size;
@@ -711,6 +727,28 @@ int Mesh::update_buffers( const bool use_texcoord, const bool use_normal, const 
         glVertexAttribIPointer(4, 1, GL_UNSIGNED_BYTE, 0, (const void *) offset);
         glEnableVertexAttribArray(4);
     }
+    if(use_instances)
+    {
+        offset= offset + size;
+        size= m_instances.size()*sizeof(Transform);
+
+        update.copy(GL_ARRAY_BUFFER, offset, size, m_instances.data());             // copie les donnees dans le vertex buffer
+
+        int layout = 5;
+        glVertexAttribPointer(layout, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(vec4), (const void*)offset);
+        glEnableVertexAttribArray(layout); 
+        glVertexAttribPointer(layout+1, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(vec4), (const void*)(offset+1*sizeof(vec4)));
+        glEnableVertexAttribArray(layout+1); 
+        glVertexAttribPointer(layout+2, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(vec4), (const void*)(offset+2*sizeof(vec4)));
+        glEnableVertexAttribArray(layout+2); 
+        glVertexAttribPointer(layout+3, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(vec4), (const void*)(offset+3*sizeof(vec4)));
+        glEnableVertexAttribArray(layout+3); 
+
+        glVertexAttribDivisor(layout, 1);
+        glVertexAttribDivisor(layout+1, 1);
+        glVertexAttribDivisor(layout+2, 1);
+        glVertexAttribDivisor(layout+3, 1);
+    }
     
     // index buffer
     size= index_buffer_size();
@@ -725,15 +763,15 @@ int Mesh::update_buffers( const bool use_texcoord, const bool use_normal, const 
     return 1;
 }
 
-void Mesh::draw( const GLuint program, const bool use_position, const bool use_texcoord, const bool use_normal, const bool use_color, const bool use_material_index )
+void Mesh::draw( const GLuint program, const bool use_position, const bool use_texcoord, const bool use_normal, const bool use_color, const bool use_material_index, const bool use_instances )
 {
     if(m_indices.size())
-        draw(0, int(m_indices.size()), program, use_position, use_texcoord, use_normal, use_color, use_material_index);
+        draw(0, int(m_indices.size()), program, use_position, use_texcoord, use_normal, use_color, use_material_index, use_instances);
     else
-        draw(0, int(m_positions.size()), program, use_position, use_texcoord, use_normal, use_color, use_material_index);
+        draw(0, int(m_positions.size()), program, use_position, use_texcoord, use_normal, use_color, use_material_index, use_instances);
 }
 
-void Mesh::draw( const int first, const int n, const GLuint program, const bool use_position, const bool use_texcoord, const bool use_normal, const bool use_color, const bool use_material_index )
+void Mesh::draw( const int first, const int n, const GLuint program, const bool use_position, const bool use_texcoord, const bool use_normal, const bool use_color, const bool use_material_index, const bool use_instances )
 {
     if(program == 0)
     {
@@ -744,11 +782,11 @@ void Mesh::draw( const int first, const int n, const GLuint program, const bool 
     // transfere toutes les donnees disponibles (et correctement definies)
     // le meme mesh peut etre dessine avec plusieurs shaders utilisant des attributs differents... 
     if(m_vao == 0)
-        create_buffers(has_texcoord(), has_normal(), has_color(), has_material_index());
+        create_buffers(has_texcoord(), has_normal(), has_color(), has_material_index(), has_instances());
     assert(m_vao != 0);
     
     if(m_update_buffers)
-        update_buffers(has_texcoord(), has_normal(), has_color(), has_material_index());
+        update_buffers(has_texcoord(), has_normal(), has_color(), has_material_index(), has_instances());
     
     glBindVertexArray(m_vao);
     
@@ -820,12 +858,26 @@ void Mesh::draw( const int first, const int n, const GLuint program, const bool 
                 if(glsl_size != 1 || glsl_type != GL_UNSIGNED_INT)
                     printf("[oops] attribute '%s' is not declared as a uint in %s... undefined draw !!\n", name, label);
             }
+            else if(location >= 5 && location <= 8)  // attribut instances necessaire
+            {
+                if(!use_instances || !has_instances())
+                    printf("[oops] material_index attribute '%s' in %s: no data... undefined draw !!\n", name, label);
+                if(glsl_size != 1 || glsl_type != GL_FLOAT_MAT4)
+                    printf("[oops] attribute '%s' is not declared as a vec4 in %s... undefined draw !!\n", name, label);
+            }
         }
     }
     #endif
     
-    if(m_indices.size() > 0)
-        glDrawElements(m_primitives, n, GL_UNSIGNED_INT, (void *) (first * sizeof(unsigned)));
-    else
-        glDrawArrays(m_primitives, first, n);
+    if(use_instances && has_instances()){
+        if(m_indices.size() > 0)
+            glDrawElementsInstanced(m_primitives, n, GL_UNSIGNED_INT, (void *) (first * sizeof(unsigned)), m_instances.size());
+        else
+            glDrawArraysInstanced(m_primitives, first, n, m_instances.size());
+    }else{
+        if(m_indices.size() > 0)
+            glDrawElements(m_primitives, n, GL_UNSIGNED_INT, (void *) (first * sizeof(unsigned)));
+        else
+            glDrawArrays(m_primitives, first, n);
+    }
 }

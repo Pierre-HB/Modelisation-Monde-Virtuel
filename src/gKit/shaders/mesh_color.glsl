@@ -9,11 +9,20 @@ layout(location= 0) in vec3 position;
     out vec4 vertex_color;
 #endif
 
+#ifdef USE_INSTANCES
+    layout(location= 5) in mat4 instance;
+#endif
+
 uniform mat4 mvpMatrix;
 
 void main( )
 {
+#ifdef USE_INSTANCES
+    gl_Position= mvpMatrix * transpose(instance) * vec4(position, 1);
+#else
     gl_Position= mvpMatrix * vec4(position, 1);
+#endif
+    
 #ifdef USE_COLOR
     vertex_color= color;
 #endif
